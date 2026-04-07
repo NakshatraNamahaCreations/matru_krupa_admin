@@ -11,7 +11,7 @@ import {
   MdWeb,
   MdReceipt,
   MdPayment,
-  MdPeople,
+
   MdAccountTree,
   MdSettings,
   MdNotifications,

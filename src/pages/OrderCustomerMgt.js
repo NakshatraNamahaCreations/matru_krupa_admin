@@ -12,63 +12,6 @@ import './OrderCustomerMgt.css';
 
 // ==================== DATA ====================
 
-const ordersData = [
-  {
-    orderId: '#1234',
-    customerName: 'Anjali Sharma',
-    date: '27/12/2025',
-    paymentMode: 'UPI',
-    paymentStatus: 'Paid',
-    orderValue: '₹2,000',
-    status: 'Approved',
-    transactionId: 'T12345B9ajkiknm9',
-    productName: '4K LED TV',
-    sku: 'SKU2469',
-    category: 'Television',
-    brand: 'Sony Bravia',
-    quantity: 1,
-    stockStatus: 'In Stock',
-    mobile: '9900990010',
-    shippingAddress: '42, JP Nagar, 2nd Phase, Mysore, Karnataka - 570008',
-  },
-  {
-    orderId: '#2346',
-    customerName: 'Mihira',
-    date: '20/12/2025',
-    paymentMode: 'COD',
-    paymentStatus: 'Pending',
-    orderValue: '₹1,000',
-    status: 'On Hold',
-    transactionId: 'T22346CODpending',
-    productName: 'Electric Kettle',
-    sku: 'SKU4424',
-    category: 'Kitchen Appliance',
-    brand: 'Prestige',
-    quantity: 1,
-    stockStatus: 'In Stock',
-    mobile: '9800980010',
-    shippingAddress: '15, Lakshmipuram, Mysore, Karnataka - 570004',
-  },
-  {
-    orderId: '#4679',
-    customerName: 'Rashmitha',
-    date: '19/11/2025',
-    paymentMode: 'Credit Card',
-    paymentStatus: 'Paid',
-    orderValue: '₹1,900',
-    status: 'Approved',
-    transactionId: 'T44679CCpaid001',
-    productName: 'Air Conditioner',
-    sku: 'SKU7890',
-    category: 'Home Appliance',
-    brand: 'Daikin',
-    quantity: 1,
-    stockStatus: 'In Stock',
-    mobile: '9101010109',
-    shippingAddress: '8, Vijayanagar, Mysore, Karnataka - 570017',
-  },
-];
-
 const returnsData = [
   {
     returnId: 'R1234',

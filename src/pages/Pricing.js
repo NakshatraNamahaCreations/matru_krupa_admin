@@ -6,7 +6,7 @@ import {
   MdKeyboardArrowUp,
   MdSearch,
   MdFilterList,
-  MdArrowBack,
+
   MdTrendingUp,
   MdWarning,
   MdError,

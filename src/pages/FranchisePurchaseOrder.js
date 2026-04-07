@@ -9,7 +9,6 @@ import {
   MdArrowBack,
   MdFileDownload,
   MdShare,
-  MdKeyboardArrowDown,
 } from 'react-icons/md';
 import './FranchisePurchaseOrder.css';
 
@@ -171,10 +170,6 @@ export default function FranchisePurchaseOrder() {
 
   const handleModify = () => {
     openEdit(selectedOrder);
-  };
-
-  const openDispatch = () => {
-    setView('dispatch');
   };
 
   const openInvoice = () => {
