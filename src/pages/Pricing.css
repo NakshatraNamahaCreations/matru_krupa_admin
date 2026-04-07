@@ -1,0 +1,713 @@
+/* ==============================
+   PRICING PAGE - BASE
+   ============================== */
+
+.pricing-page {
+  flex: 1;
+  padding: 24px 32px;
+  background: #f1f5f9;
+  overflow-y: auto;
+  min-height: 100vh;
+}
+
+/* ==============================
+   HEADER & DROPDOWN NAVIGATION
+   ============================== */
+
+.pricing-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pricing-dropdown-wrapper {
+  position: relative;
+}
+
+.pricing-dropdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.pricing-dropdown-label {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 0.02em;
+}
+
+.pricing-dropdown-arrow {
+  font-size: 24px;
+  color: #64748b;
+  transition: transform 0.2s;
+}
+
+.pricing-dropdown-toggle:hover .pricing-dropdown-arrow {
+  color: #1e293b;
+}
+
+.pricing-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  min-width: 280px;
+  padding: 6px 0;
+  animation: pricing-fadeIn 0.15s ease;
+}
+
+@keyframes pricing-fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pricing-dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 18px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.pricing-dropdown-item:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.pricing-dropdown-item.active {
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* ==============================
+   TOOLBAR
+   ============================== */
+
+.pricing-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.pricing-search {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0 12px;
+  min-width: 300px;
+}
+
+.pricing-search-icon {
+  color: #94a3b8;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.pricing-search input {
+  border: none;
+  outline: none;
+  padding: 9px 8px;
+  font-size: 13px;
+  width: 100%;
+  background: transparent;
+  color: #334155;
+}
+
+.pricing-search input::placeholder {
+  color: #94a3b8;
+}
+
+.pricing-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.pricing-filter-btn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+/* ==============================
+   TABLE
+   ============================== */
+
+.pricing-table-wrapper {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  overflow-x: auto;
+}
+
+.pricing-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1400px;
+}
+
+.pricing-table.pricing-table-franchise {
+  min-width: 1600px;
+}
+
+.pricing-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  padding: 12px 10px;
+  border-bottom: 2px solid #e2e8f0;
+  background: #f8fafc;
+  white-space: nowrap;
+}
+
+.pricing-table td {
+  padding: 10px 10px;
+  font-size: 12px;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.pricing-table tr:last-child td {
+  border-bottom: none;
+}
+
+.pricing-table tr:hover td {
+  background: #f8fafc;
+}
+
+.pricing-td-bold {
+  font-weight: 600;
+  color: #1e293b !important;
+}
+
+/* ==============================
+   STATUS BADGES
+   ============================== */
+
+.pricing-status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pricing-status-badge.active {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.pricing-status-badge.scheduled {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.pricing-status-badge.inactive {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* ==============================
+   ACTIONS
+   ============================== */
+
+.pricing-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pricing-edit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: #eff6ff;
+  color: #3b82f6;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.15s;
+}
+
+.pricing-edit-btn:hover {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.pricing-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: #fef2f2;
+  color: #ef4444;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.15s;
+}
+
+.pricing-delete-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.pricing-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 24px;
+  transition: all 0.15s;
+}
+
+.pricing-toggle-btn.on {
+  color: #22c55e;
+}
+
+.pricing-toggle-btn.off {
+  color: #94a3b8;
+}
+
+.pricing-toggle-btn:hover {
+  background: #f1f5f9;
+}
+
+/* ==============================
+   EMPTY STATE
+   ============================== */
+
+.pricing-empty {
+  text-align: center;
+  padding: 40px 16px !important;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+/* ==============================
+   FORM CARD
+   ============================== */
+
+.pricing-form-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 28px 32px;
+}
+
+.pricing-form-card-inline {
+  padding: 22px 24px;
+}
+
+.pricing-form-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 24px 0;
+}
+
+.pricing-form-subtitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 18px 0;
+}
+
+.pricing-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 20px;
+}
+
+.pricing-form-full {
+  grid-column: 1 / -1;
+}
+
+.pricing-form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pricing-form-row label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.pricing-form-row input,
+.pricing-form-row select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #334155;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.pricing-form-row input:focus,
+.pricing-form-row select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.pricing-form-row input::placeholder {
+  color: #94a3b8;
+}
+
+.pricing-form-row-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.pricing-input-suffix {
+  position: relative;
+}
+
+.pricing-input-suffix input {
+  width: 100%;
+  padding-right: 32px;
+  padding: 9px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #334155;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.pricing-input-suffix input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.pricing-suffix {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+/* ==============================
+   FORM ACTIONS / BUTTONS
+   ============================== */
+
+.pricing-form-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.pricing-btn-primary {
+  padding: 10px 24px;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.pricing-btn-primary:hover {
+  background: #2563eb;
+}
+
+.pricing-btn-outline {
+  padding: 10px 24px;
+  background: #fff;
+  color: #3b82f6;
+  border: 1.5px solid #3b82f6;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.pricing-btn-outline:hover {
+  background: #eff6ff;
+}
+
+.pricing-btn-wide {
+  flex: 1;
+  text-align: center;
+}
+
+.pricing-btn-full {
+  width: 100%;
+  text-align: center;
+}
+
+/* ==============================
+   SPLIT LAYOUT
+   ============================== */
+
+.pricing-split-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.pricing-split-equal {
+  grid-template-columns: 1fr 1fr;
+}
+
+.pricing-split-left {
+  min-width: 0;
+}
+
+.pricing-split-right {
+  min-width: 0;
+}
+
+/* ==============================
+   SUBVIEW
+   ============================== */
+
+.pricing-subview {
+  /* wrapper for each sub-view content */
+}
+
+/* ==============================
+   MARGIN SIMULATION - PRODUCT INFO
+   ============================== */
+
+.pricing-product-info {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pricing-product-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.pricing-product-info-label {
+  font-weight: 600;
+  color: #475569;
+  min-width: 110px;
+}
+
+.pricing-product-info-value {
+  color: #1e293b;
+  font-weight: 500;
+}
+
+/* ==============================
+   MARGIN SIMULATION - RESULTS
+   ============================== */
+
+.pricing-sim-results {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pricing-sim-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.pricing-sim-item {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pricing-sim-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.pricing-sim-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.pricing-sim-trending {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #16a34a;
+}
+
+.pricing-trending-icon {
+  font-size: 22px;
+}
+
+.pricing-sim-alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pricing-sim-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pricing-sim-alert-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.pricing-sim-alert-warning {
+  background: #fefce8;
+  color: #a16207;
+  border: 1px solid #fde68a;
+}
+
+.pricing-sim-alert-warning .pricing-sim-alert-icon {
+  color: #eab308;
+}
+
+.pricing-sim-alert-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.pricing-sim-alert-error .pricing-sim-alert-icon {
+  color: #ef4444;
+}
+
+.pricing-sim-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pricing-sim-empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+/* ==============================
+   RESPONSIVE
+   ============================== */
+
+@media (max-width: 1024px) {
+  .pricing-split-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-split-equal {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .pricing-page {
+    padding: 16px;
+  }
+
+  .pricing-search {
+    min-width: 200px;
+  }
+
+  .pricing-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-form-row-pair {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-sim-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-form-actions {
+    flex-direction: column;
+  }
+}

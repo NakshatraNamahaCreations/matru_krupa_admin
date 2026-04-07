@@ -1,0 +1,328 @@
+.teams-page {
+  flex: 1;
+  padding: 24px 32px;
+  background: #f1f5f9;
+  overflow-y: auto;
+  min-height: 100vh;
+}
+
+.teams-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 0.02em;
+  margin: 0 0 24px 0;
+}
+
+.teams-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.teams-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.teams-add-btn:hover {
+  background: #1d4ed8;
+}
+
+.teams-search {
+  padding: 10px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 260px;
+  outline: none;
+  background: #fff;
+  color: #334155;
+  transition: border-color 0.15s;
+}
+
+.teams-search:focus {
+  border-color: #2563eb;
+}
+
+.teams-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 0;
+  overflow: hidden;
+}
+
+.teams-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.teams-table thead th {
+  text-align: left;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  background: transparent;
+}
+
+.teams-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.teams-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.teams-table tbody td {
+  padding: 16px 20px;
+  vertical-align: top;
+  font-size: 14px;
+  color: #334155;
+  line-height: 1.7;
+}
+
+.teams-detail-label {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.teams-permissions {
+  line-height: 1.8;
+  font-size: 13px;
+  color: #475569;
+}
+
+.teams-actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.teams-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: opacity 0.15s;
+}
+
+.teams-action-btn:hover {
+  opacity: 0.8;
+}
+
+.teams-action-edit {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.teams-action-delete {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.teams-action-deactivate {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Pagination */
+.teams-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 14px 20px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.teams-pagination select {
+  padding: 4px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #334155;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+}
+
+.teams-pagination-info {
+  color: #475569;
+  font-size: 13px;
+}
+
+.teams-pagination-arrows {
+  display: flex;
+  gap: 4px;
+}
+
+.teams-page-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #475569;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.teams-page-arrow:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.teams-page-arrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Form view */
+.teams-form-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 28px 32px;
+  max-width: 640px;
+}
+
+.teams-form-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 24px 0;
+}
+
+.teams-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.teams-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.teams-form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.teams-form-group input {
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #334155;
+  outline: none;
+  transition: border-color 0.15s;
+  background: #fff;
+}
+
+.teams-form-group input:focus {
+  border-color: #2563eb;
+}
+
+.teams-permissions-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.teams-permissions-group > label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.teams-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 0;
+}
+
+.teams-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #334155;
+  cursor: pointer;
+}
+
+.teams-checkbox-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #2563eb;
+  cursor: pointer;
+}
+
+.teams-form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.teams-save-btn {
+  padding: 10px 28px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.teams-save-btn:hover {
+  background: #1d4ed8;
+}
+
+.teams-back-btn {
+  padding: 10px 28px;
+  background: #fff;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.teams-back-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}

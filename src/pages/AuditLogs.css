@@ -1,0 +1,101 @@
+.audit-container {
+  padding: 24px 32px;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+.audit-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 20px 0;
+}
+
+/* Filter Bar */
+.audit-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.audit-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.audit-dropdown {
+  padding: 8px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #334155;
+  background: #fff;
+  min-width: 180px;
+  cursor: pointer;
+  outline: none;
+}
+
+.audit-dropdown:focus {
+  border-color: #1e40af;
+}
+
+.audit-export-btn {
+  padding: 8px 24px;
+  background: #1e40af;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.audit-export-btn:hover {
+  background: #1e3a8a;
+}
+
+/* Table */
+.audit-table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 14px;
+}
+
+.audit-table thead tr {
+  background: #1e40af;
+}
+
+.audit-table thead th {
+  color: #fff;
+  font-weight: 600;
+  padding: 12px 16px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.audit-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.audit-table tbody tr:hover {
+  background: #f1f5f9;
+}
+
+.audit-table tbody td {
+  padding: 12px 16px;
+  color: #334155;
+  white-space: nowrap;
+}

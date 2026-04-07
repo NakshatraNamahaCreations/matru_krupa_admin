@@ -1,0 +1,378 @@
+/* ===================================
+   WEB OPERATIONS MANAGEMENT — STYLES
+   =================================== */
+
+.webops-page {
+  padding: 28px 32px;
+  background: #f1f5f9;
+  min-height: 100vh;
+  width: 100%;
+  font-family: 'Segoe UI', 'Inter', sans-serif;
+}
+
+.webops-page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 20px 0;
+}
+
+/* ---------- Tabs ---------- */
+
+.webops-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 24px;
+}
+
+.webops-tab {
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.webops-tab:hover {
+  color: #1e40af;
+}
+
+.webops-tab-active {
+  color: #1e40af;
+  border-bottom-color: #1e40af;
+}
+
+.webops-tab-content {
+  animation: webopsFadeIn 0.25s ease;
+}
+
+@keyframes webopsFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Card ---------- */
+
+.webops-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.webops-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.webops-card-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.webops-card-header .webops-card-title {
+  margin-bottom: 0;
+}
+
+.webops-back-icon {
+  cursor: pointer;
+  font-size: 20px;
+  color: #475569;
+  transition: color 0.15s;
+}
+
+.webops-back-icon:hover {
+  color: #1e40af;
+}
+
+/* ---------- Banners split layout ---------- */
+
+.webops-banners-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 24px;
+}
+
+.webops-banner-placeholder {
+  width: 120px;
+  height: 50px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ---------- File chooser ---------- */
+
+.webops-file-chooser {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.webops-file-label {
+  display: inline-block;
+  padding: 7px 18px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.webops-file-label:hover {
+  background: #cbd5e1;
+}
+
+.webops-file-name {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* ---------- Table ---------- */
+
+.webops-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.webops-table thead tr {
+  background: #f8fafc;
+}
+
+.webops-table th {
+  text-align: left;
+  padding: 12px 14px;
+  font-weight: 700;
+  color: #475569;
+  font-size: 13px;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.webops-table td {
+  padding: 12px 14px;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.webops-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* Blue header variant */
+.webops-table-blue thead tr {
+  background: #1e40af;
+}
+
+.webops-table-blue th {
+  color: #fff;
+  border-bottom: none;
+}
+
+/* ---------- Badges ---------- */
+
+.webops-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.webops-badge-green {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.webops-badge-orange {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.webops-badge-red {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* ---------- Buttons ---------- */
+
+.webops-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 22px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.webops-btn:hover {
+  opacity: 0.88;
+}
+
+.webops-btn:active {
+  transform: scale(0.97);
+}
+
+.webops-btn-blue {
+  background: #1e40af;
+  color: #fff;
+}
+
+.webops-btn-red {
+  background: #dc2626;
+  color: #fff;
+}
+
+.webops-btn-dark {
+  background: #1e293b;
+  color: #fff;
+}
+
+/* ---------- Icon buttons ---------- */
+
+.webops-action-cell {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.webops-icon-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: opacity 0.15s;
+}
+
+.webops-icon-btn:hover {
+  opacity: 0.8;
+}
+
+.webops-icon-blue {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.webops-icon-orange {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.webops-icon-green {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+/* ---------- Forms ---------- */
+
+.webops-form {
+  margin-top: 8px;
+}
+
+.webops-form-row {
+  margin-bottom: 18px;
+}
+
+.webops-form-full {
+  width: 100%;
+}
+
+.webops-form-half {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.webops-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.webops-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.webops-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0 0 12px 0;
+}
+
+.webops-input,
+.webops-select {
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #334155;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.webops-input:focus,
+.webops-select:focus {
+  border-color: #1e40af;
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+.webops-form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 768px) {
+  .webops-banners-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .webops-form-half {
+    grid-template-columns: 1fr;
+  }
+
+  .webops-tabs {
+    overflow-x: auto;
+  }
+
+  .webops-page {
+    padding: 16px;
+  }
+}
