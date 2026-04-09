@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './CommissionPlaceholder.css';
 
 const reportTypes = [
@@ -18,7 +18,7 @@ const recentReports = [
 ];
 
 export default function CommissionReports() {
-  const [selectedReport, setSelectedReport] = useState('');
+  const [selectedReport, setSelectedReport] = useState(''); // eslint-disable-line no-unused-vars
 
   return (
     <div className="cp">
