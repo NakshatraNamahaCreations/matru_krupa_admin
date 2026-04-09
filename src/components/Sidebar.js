@@ -62,8 +62,11 @@ const menuSections = [
       { label: 'Overview', icon: <MdAssessment />, path: '/commission-overview' },
       { label: 'Hierarchy Setup', icon: <MdAccountTree />, path: '/hierarchy' },
       { label: 'Commission Engine', icon: <MdSettings />, path: '/commission-engine' },
-      { label: 'Promoters & KYC', icon: <MdVerifiedUser />, path: '/promoters' },
       { label: 'Withdrawal', icon: <MdAccountBalanceWallet />, path: '/withdrawal' },
+      { label: 'KYC Verification', icon: <MdVerifiedUser />, path: '/kyc-verification' },
+      { label: 'Earnings', icon: <MdMonetizationOn />, path: '/earnings' },
+      { label: 'Taluk Admin Power', icon: <MdAccountTree />, path: '/taluk-admin-power' },
+      { label: 'Reports', icon: <MdAssessment />, path: '/commission-reports' },
     ],
   },
   {

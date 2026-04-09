@@ -21,6 +21,14 @@ import ManageTeams from './pages/ManageTeams';
 import NotificationsCenter from './pages/NotificationsCenter';
 import AuditLogs from './pages/AuditLogs';
 import Reports from './pages/Reports';
+import CommissionOverview from './pages/CommissionOverview';
+import HierarchySetup from './pages/HierarchySetup';
+import CommissionEngine from './pages/CommissionEngine';
+import Withdrawal from './pages/Withdrawal';
+import KycVerification from './pages/KycVerification';
+import Earnings from './pages/Earnings';
+import TalukAdminPower from './pages/TalukAdminPower';
+import CommissionReports from './pages/CommissionReports';
 import './App.css';
 
 function PrivateRoute({ children }) {
@@ -56,6 +64,14 @@ function AppRoutes() {
       <Route path="/teams" element={<PrivateRoute><ManageTeams /></PrivateRoute>} />
       <Route path="/notifications" element={<PrivateRoute><NotificationsCenter /></PrivateRoute>} />
       <Route path="/audit" element={<PrivateRoute><AuditLogs /></PrivateRoute>} />
+      <Route path="/commission-overview" element={<PrivateRoute><CommissionOverview /></PrivateRoute>} />
+      <Route path="/hierarchy" element={<PrivateRoute><HierarchySetup /></PrivateRoute>} />
+      <Route path="/commission-engine" element={<PrivateRoute><CommissionEngine /></PrivateRoute>} />
+      <Route path="/withdrawal" element={<PrivateRoute><Withdrawal /></PrivateRoute>} />
+      <Route path="/kyc-verification" element={<PrivateRoute><KycVerification /></PrivateRoute>} />
+      <Route path="/earnings" element={<PrivateRoute><Earnings /></PrivateRoute>} />
+      <Route path="/taluk-admin-power" element={<PrivateRoute><TalukAdminPower /></PrivateRoute>} />
+      <Route path="/commission-reports" element={<PrivateRoute><CommissionReports /></PrivateRoute>} />
       <Route path="/reports" element={<PrivateRoute><Reports /></PrivateRoute>} />
     </Routes>
   );
