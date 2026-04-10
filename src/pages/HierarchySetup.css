@@ -289,6 +289,16 @@
   background: #dcfce7;
 }
 
+.hs-inactive-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ef4444;
+  background: #fee2e2;
+}
+
 .hs-action-btn {
   background: none;
   border: 1px solid #cbd5e1;
