@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { MdArrowBack, MdVisibility, MdDelete, MdPerson, MdWarning } from 'react-icons/md';
+import { MdArrowBack, MdVisibility, MdEdit, MdDelete, MdPerson, MdWarning, MdClose } from 'react-icons/md';
 import {
   hierarchyAdminApi,
   shopApi,
@@ -9,10 +9,11 @@ import {
   talukApi,
   hobliApi,
 } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import Loader from '../components/Loader';
 import './HierarchySetup.css';
 
-const LEVEL_OPTIONS = ['State Admin', 'Assistant District Admin', 'District Admin', 'Taluk Admin'];
+const LEVEL_OPTIONS = ['State Admin', 'Assistant District Admin', 'District Admin', 'Taluk Admin', 'Promoters'];
 const COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 const FALLBACK_DISTRICTS = [
   'Bagalkot', 'Bellari', 'Bengalore North', 'Bengalore South','Bengalore Rural', 'Belgaum',
@@ -334,6 +335,8 @@ const emptyShopForm = {
 };
 
 export default function HierarchySetup() {
+  const { staff } = useAuth();
+  const canSeeDistrictSplit = staff?.role === 'admin' || staff?.role === 'super_admin';
   const [activeTab, setActiveTab] = useState('create');
   const [viewDetail, setViewDetail] = useState(null);
 
@@ -353,6 +356,7 @@ export default function HierarchySetup() {
   const [levelFilter, setLevelFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [editAdmin, setEditAdmin] = useState(null);
 
   // ── District Split ──
   const [splitDistrict, setSplitDistrict] = useState('Mysuru');
@@ -461,12 +465,33 @@ export default function HierarchySetup() {
   const fetchSplits = useCallback(async () => {
     try {
       setSplitLoading(true);
-      const data = await districtSplitApi.get(splitDistrict);
-      setSplits((data.splits || []).map((s, i) => ({
-        ...s,
-        pct: s.percentage,
-        color: s.color || COLORS[i % COLORS.length],
-      })));
+      const [savedRes, adminsRes] = await Promise.all([
+        districtSplitApi.get(splitDistrict).catch(() => ({ splits: [] })),
+        hierarchyAdminApi
+          .getAll({ level: 'District Admin', status: 'Active' })
+          .catch(() => []),
+      ]);
+
+      const activeAdmins = (adminsRes || []).filter(a => a.district === splitDistrict);
+      const saved = savedRes.splits || [];
+
+      // Build slider rows from active admins, preloading saved % when matched by
+      // ObjectId (preferred) or name (fallback for legacy rows without adminId ref).
+      const merged = activeAdmins.map((a, i) => {
+        const prior = saved.find(
+          s => (s.adminId && String(s.adminId) === String(a._id)) || s.name === a.fullName
+        );
+        return {
+          adminObjectId: a._id,
+          adminCode: a.adminId,
+          name: a.fullName,
+          pct: prior ? prior.percentage : 0,
+          color: (prior && prior.color) || COLORS[i % COLORS.length],
+          earned: (prior && prior.earned) || 0,
+        };
+      });
+
+      setSplits(merged);
     } catch (err) {
       setSplits([]);
     } finally {
@@ -560,6 +585,34 @@ export default function HierarchySetup() {
     }
   };
 
+  const handleUpdateAdmin = async () => {
+    if (!editAdmin) return;
+    if (!editAdmin.fullName?.trim() || !editAdmin.mobile?.trim() || !editAdmin.email?.trim()) {
+      showToast('Name, mobile and email are required', 'error');
+      return;
+    }
+    if (!/^\d{10}$/.test(editAdmin.mobile.trim())) {
+      showToast('Mobile must be 10 digits', 'error');
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(editAdmin.email)) {
+      showToast('Invalid email', 'error');
+      return;
+    }
+    try {
+      setSubmitting(true);
+      const { _id, adminId, isActive, createdAt, updatedAt, __v, ...payload } = editAdmin;
+      await hierarchyAdminApi.update(_id, payload);
+      showToast('Admin updated');
+      setEditAdmin(null);
+      fetchAdmins();
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleDeleteAdmin = async (id) => {
     try {
       await hierarchyAdminApi.delete(id);
@@ -591,6 +644,7 @@ export default function HierarchySetup() {
       await districtSplitApi.save({
         district: splitDistrict,
         splits: splits.map(s => ({
+          adminId: s.adminObjectId,
           name: s.name,
           percentage: s.pct,
           color: s.color,
@@ -640,9 +694,14 @@ export default function HierarchySetup() {
   const tabs = [
     { key: 'create', label: 'Create Admin' },
     { key: 'overview', label: 'Overview' },
-    { key: 'split', label: 'District Admin split %' },
+    ...(canSeeDistrictSplit ? [{ key: 'split', label: 'District Admin split %' }] : []),
     { key: 'shop', label: 'Shop Registration' },
   ];
+
+  // Guard: if a non-admin user lands on the hidden 'split' tab (e.g. via stale state), redirect.
+  useEffect(() => {
+    if (!canSeeDistrictSplit && activeTab === 'split') setActiveTab('overview');
+  }, [canSeeDistrictSplit, activeTab]);
 
   // ── Detail View ──
   if (viewDetail) {
@@ -707,6 +766,121 @@ export default function HierarchySetup() {
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         }}>
           {toast.msg}
+        </div>
+      )}
+
+      {/* Edit Admin Modal */}
+      {editAdmin && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', zIndex: 9998, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={() => setEditAdmin(null)}
+        >
+          <div
+            style={{ background: '#fff', borderRadius: 12, width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 22px', borderBottom: '1px solid #e2e8f0' }}>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#1e293b' }}>
+                Edit Admin <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>&middot; {editAdmin.adminId}</span>
+              </h3>
+              <button
+                onClick={() => setEditAdmin(null)}
+                aria-label="Close"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', fontSize: 22, display: 'flex', alignItems: 'center', padding: 4, borderRadius: 6 }}
+              >
+                <MdClose />
+              </button>
+            </div>
+            <div style={{ padding: '18px 22px' }}>
+              <div className="hs-form-group">
+                <label className="hs-label">Full Name *</label>
+                <input className="hs-input" value={editAdmin.fullName || ''} onChange={e => setEditAdmin({ ...editAdmin, fullName: e.target.value })} />
+              </div>
+              <div className="hs-row">
+                <div className="hs-form-group">
+                  <label className="hs-label">Mobile *</label>
+                  <input className="hs-input" value={editAdmin.mobile || ''} onChange={e => setEditAdmin({ ...editAdmin, mobile: e.target.value })} />
+                </div>
+                <div className="hs-form-group">
+                  <label className="hs-label">Email *</label>
+                  <input className="hs-input" value={editAdmin.email || ''} onChange={e => setEditAdmin({ ...editAdmin, email: e.target.value })} />
+                </div>
+              </div>
+              <div className="hs-row">
+                <div className="hs-form-group">
+                  <label className="hs-label">District</label>
+                  <select
+                    className="hs-select"
+                    value={editAdmin.district || ''}
+                    onChange={e => setEditAdmin({ ...editAdmin, district: e.target.value, talukName: '' })}
+                  >
+                    <option value="">Select District</option>
+                    {KARNATAKA_DISTRICTS.map(d => <option key={d}>{d}</option>)}
+                  </select>
+                </div>
+                {editAdmin.level === 'Taluk Admin' && (
+                  <div className="hs-form-group">
+                    <label className="hs-label">Taluk</label>
+                    <select
+                      className="hs-select"
+                      value={editAdmin.talukName || ''}
+                      onChange={e => setEditAdmin({ ...editAdmin, talukName: e.target.value })}
+                      disabled={!editAdmin.district}
+                    >
+                      <option value="">{editAdmin.district ? 'Select Taluk' : 'Select District first'}</option>
+                      {(TALUKS_BY_DISTRICT[editAdmin.district] || []).map(t => <option key={t}>{t}</option>)}
+                    </select>
+                  </div>
+                )}
+              </div>
+              <div className="hs-row">
+                <div className="hs-form-group">
+                  <label className="hs-label">Aadhar</label>
+                  <input className="hs-input" value={editAdmin.aadhar || ''} onChange={e => setEditAdmin({ ...editAdmin, aadhar: e.target.value })} />
+                </div>
+                <div className="hs-form-group">
+                  <label className="hs-label">PAN</label>
+                  <input className="hs-input" value={editAdmin.pan || ''} onChange={e => setEditAdmin({ ...editAdmin, pan: e.target.value })} />
+                </div>
+              </div>
+
+              <div className="hs-card-title" style={{ marginTop: 12, marginBottom: 12 }}>BANK DETAILS</div>
+              <div className="hs-form-group">
+                <label className="hs-label">Bank Name</label>
+                <input className="hs-input" value={editAdmin.bankName || ''} onChange={e => setEditAdmin({ ...editAdmin, bankName: e.target.value })} />
+              </div>
+              <div className="hs-row">
+                <div className="hs-form-group">
+                  <label className="hs-label">Account Number</label>
+                  <input className="hs-input" value={editAdmin.accountNumber || ''} onChange={e => setEditAdmin({ ...editAdmin, accountNumber: e.target.value })} />
+                </div>
+                <div className="hs-form-group">
+                  <label className="hs-label">Account Holder</label>
+                  <input className="hs-input" value={editAdmin.accountHolder || ''} onChange={e => setEditAdmin({ ...editAdmin, accountHolder: e.target.value })} />
+                </div>
+              </div>
+              <div className="hs-row">
+                <div className="hs-form-group">
+                  <label className="hs-label">IFSC</label>
+                  <input className="hs-input" value={editAdmin.ifsc || ''} onChange={e => setEditAdmin({ ...editAdmin, ifsc: e.target.value })} />
+                </div>
+                <div className="hs-form-group">
+                  <label className="hs-label">Account Type</label>
+                  <select className="hs-select" value={editAdmin.accountType || 'Savings'} onChange={e => setEditAdmin({ ...editAdmin, accountType: e.target.value })}>
+                    <option>Savings</option>
+                    <option>Current</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
+                <button className="hs-btn hs-btn-outline" onClick={() => setEditAdmin(null)} disabled={submitting}>Cancel</button>
+                <button className="hs-btn hs-btn-primary" onClick={handleUpdateAdmin} disabled={submitting}>
+                  {submitting ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -914,8 +1088,9 @@ export default function HierarchySetup() {
                         </span>
                       </td>
                       <td>
-                        <button className="hs-action-btn" onClick={() => setViewDetail(a)}><MdVisibility /></button>
-                        <button className="hs-action-btn delete" onClick={() => setDeleteConfirm(a._id)}><MdDelete /></button>
+                        <button className="hs-action-btn" onClick={() => setViewDetail(a)} title="View"><MdVisibility /></button>
+                        <button className="hs-action-btn" onClick={() => setEditAdmin({ ...a })} title="Edit"><MdEdit /></button>
+                        <button className="hs-action-btn delete" onClick={() => setDeleteConfirm(a._id)} title="Delete"><MdDelete /></button>
                       </td>
                     </tr>
                   ))}
@@ -952,17 +1127,40 @@ export default function HierarchySetup() {
               <div style={{ textAlign: 'center', padding: 30 }}><Loader /></div>
             ) : splits.length === 0 ? (
               <div style={{ textAlign: 'center', padding: 30, color: '#94a3b8', fontSize: 13 }}>
-                No splits configured for {splitDistrict}. Add district admins to configure.
+                No active District Admins for {splitDistrict}. Add one in the "Create Admin" tab to configure splits.
               </div>
             ) : (
               splits.map((s, i) => (
-                <div className="hs-slider-row" key={i}>
+                <div className="hs-slider-row" key={s.adminObjectId || i}>
                   <span className="hs-slider-dot" style={{ background: s.color }} />
-                  <span className="hs-slider-name">{s.name}</span>
+                  <span className="hs-slider-name">
+                    {s.name}
+                    {s.adminCode && (
+                      <span style={{ fontSize: 11, color: '#94a3b8', marginLeft: 6 }}>{s.adminCode}</span>
+                    )}
+                  </span>
                   <input type="range" className="hs-slider" min="0" max="100" value={s.pct} onChange={e => handleSlider(i, e.target.value)} />
                   <span className="hs-slider-pct" style={{ color: s.color }}>{s.pct}%</span>
                 </div>
               ))
+            )}
+
+            {splits.length > 0 && (
+              <div style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '8px 12px', marginTop: 8,
+                background: splits.reduce((sum, s) => sum + s.pct, 0) === 100 ? '#f0fdf4' : '#fef2f2',
+                border: `1px solid ${splits.reduce((sum, s) => sum + s.pct, 0) === 100 ? '#bbf7d0' : '#fecaca'}`,
+                borderRadius: 6, fontSize: 13,
+              }}>
+                <span style={{ fontWeight: 600, color: '#475569' }}>Total</span>
+                <span style={{
+                  fontWeight: 700,
+                  color: splits.reduce((sum, s) => sum + s.pct, 0) === 100 ? '#16a34a' : '#dc2626',
+                }}>
+                  {splits.reduce((sum, s) => sum + s.pct, 0)}%
+                </span>
+              </div>
             )}
 
             <div className="hs-split-actions">
@@ -985,13 +1183,13 @@ export default function HierarchySetup() {
                   <span className="hs-bar-pct" style={{ color: s.color }}>{s.pct}%</span>
                 </div>
               ))}
-              <table className="hs-earned-table">
+              {/* <table className="hs-earned-table">
                 <tbody>
                   {splits.map((s, i) => (
                     <tr key={i}><td>{s.name}</td><td>{'\u20B9'}{(s.earned || 0).toLocaleString()}</td></tr>
                   ))}
                 </tbody>
-              </table>
+              </table> */}
             </div>
 
             <div className="hs-split-card">

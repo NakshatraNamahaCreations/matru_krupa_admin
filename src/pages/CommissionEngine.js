@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MdArrowBack, MdVisibility, MdPerson } from 'react-icons/md';
+import { districtApi, talukApi, hobliApi, shopApi } from '../services/api';
 import './CommissionEngine.css';
 
 const commissionRules = [
@@ -62,9 +63,45 @@ export default function CommissionEngine() {
 
   // Simulator form
   const [simForm, setSimForm] = useState({
-    promoterCode: '', billingShop: 'Lakshmi Electronics - Hunsur Town Hobli',
+    promoterCode: '', district: '', taluk: '', hobli: '',
+    billingShop: '',
     productName: '', quantity: '', dateTime: '',
   });
+
+  const [districtOptions, setDistrictOptions] = useState([]);
+  const [talukOptions, setTalukOptions] = useState([]);
+  const [hobliOptions, setHobliOptions] = useState([]);
+  const [shopOptions, setShopOptions] = useState([]);
+
+  useEffect(() => {
+    districtApi.getAll()
+      .then(items => setDistrictOptions(items.map(d => d.name)))
+      .catch(() => setDistrictOptions([]));
+  }, []);
+
+  useEffect(() => {
+    if (!simForm.district) { setTalukOptions([]); return; }
+    talukApi.getAll({ district: simForm.district })
+      .then(items => setTalukOptions(items.map(t => t.name)))
+      .catch(() => setTalukOptions([]));
+  }, [simForm.district]);
+
+  useEffect(() => {
+    if (!simForm.taluk) { setHobliOptions([]); return; }
+    hobliApi.getAll({ taluk: simForm.taluk })
+      .then(items => setHobliOptions(items.map(h => h.name)))
+      .catch(() => setHobliOptions([]));
+  }, [simForm.taluk]);
+
+  useEffect(() => {
+    shopApi.getAll()
+      .then(items => setShopOptions(items || []))
+      .catch(() => setShopOptions([]));
+  }, []);
+
+  const filteredShopOptions = simForm.hobli
+    ? shopOptions.filter(s => s.hobli === simForm.hobli)
+    : shopOptions;
 
   // Overview filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -162,6 +199,41 @@ export default function CommissionEngine() {
             <div className="ce-form-group">
               <label className="ce-label">Promoter Code</label>
               <input className="ce-input" placeholder="Enter Promoter Code(Mobile Number)" value={simForm.promoterCode} onChange={e => setSimForm({...simForm, promoterCode: e.target.value})} />
+            </div>
+            <div className="ce-form-group">
+              <label className="ce-label">Select District</label>
+              <select
+                className="ce-select"
+                value={simForm.district}
+                onChange={e => setSimForm({ ...simForm, district: e.target.value, taluk: '', hobli: '' })}
+              >
+                <option value="">Select District</option>
+                {districtOptions.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
+            <div className="ce-form-group">
+              <label className="ce-label">Select Taluk</label>
+              <select
+                className="ce-select"
+                value={simForm.taluk}
+                onChange={e => setSimForm({ ...simForm, taluk: e.target.value, hobli: '' })}
+                disabled={!simForm.district}
+              >
+                <option value="">Select Taluk</option>
+                {talukOptions.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div className="ce-form-group">
+              <label className="ce-label">Select Hobli</label>
+              <select
+                className="ce-select"
+                value={simForm.hobli}
+                onChange={e => setSimForm({ ...simForm, hobli: e.target.value })}
+                disabled={!simForm.taluk}
+              >
+                <option value="">Select Hobli</option>
+                {hobliOptions.map(h => <option key={h} value={h}>{h}</option>)}
+              </select>
             </div>
             <div className="ce-form-group">
               <label className="ce-label">Select Billing shop</label>
