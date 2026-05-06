@@ -85,8 +85,6 @@ const franchiseOverviewData = [
   },
 ];
 
-const franchiseOptions = ['North Branch', 'Central Hub', 'South Outlet', 'City Central', 'East Point', 'Metro Mall'];
-
 const initialLedger = [
   {
     id: 1,

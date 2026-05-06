@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   MdSearch,
   MdFilterList,
@@ -117,16 +117,16 @@ function AutoReservation() {
   const [detailItem, setDetailItem] = useState(null);
   const [editStatus, setEditStatus] = useState('');
 
-  const loadReservations = () => {
+  const loadReservations = useCallback(() => {
     const params = {};
     if (search.trim()) params.search = search.trim();
     if (date) params.date = date;
     reservationApi.getAll(params)
       .then((data) => setItems(data))
       .catch(() => setItems([]));
-  };
+  }, [search, date]);
 
-  useEffect(() => { loadReservations(); }, [search, date]);
+  useEffect(() => { loadReservations(); }, [loadReservations]);
 
   const handleSave = async () => {
     if (!detailItem?._id) { setDetailItem(null); return; }
@@ -274,15 +274,15 @@ function ReorderSuggestions() {
   const [search, setSearch] = useState('');
   const [items, setItems] = useState([]);
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     const params = {};
     if (search.trim()) params.search = search.trim();
     reorderSuggestionApi.getAll(params)
       .then((data) => setItems(data))
       .catch(() => setItems([]));
-  };
+  }, [search]);
 
-  useEffect(() => { loadData(); }, [search]);
+  useEffect(() => { loadData(); }, [loadData]);
 
   const trendIcon = (trend) => {
     if (trend === 'High') return <span className="iw-trend iw-trend-high"><MdArrowUpward /> High</span>;
@@ -381,7 +381,7 @@ function BinRackMapping() {
   const [storageType, setStorageType] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     const params = {};
     if (search.trim()) params.search = search.trim();
     binRackApi.getAll(params)
@@ -390,9 +390,9 @@ function BinRackMapping() {
         setStats(data.stats || { totalRacks: 0, totalBins: 0, fragile: 0, tempSensitive: 0 });
       })
       .catch(() => { setItems([]); });
-  };
+  }, [search]);
 
-  useEffect(() => { loadData(); }, [search]);
+  useEffect(() => { loadData(); }, [loadData]);
 
   const handleSelectRow = (row) => {
     setSelectedItem(row);
@@ -545,15 +545,15 @@ function DamageShrinkage() {
   const [description, setDescription] = useState('');
   const [suggestedAction, setSuggestedAction] = useState('');
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     const params = {};
     if (search.trim()) params.search = search.trim();
     damageReportApi.getAll(params)
       .then((data) => setItems(data))
       .catch(() => setItems([]));
-  };
+  }, [search]);
 
-  useEffect(() => { loadData(); }, [search]);
+  useEffect(() => { loadData(); }, [loadData]);
 
   const handleSelectReport = (row) => {
     setSelectedReport(row);
