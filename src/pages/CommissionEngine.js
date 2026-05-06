@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MdArrowBack, MdVisibility, MdPerson } from 'react-icons/md';
-import { districtApi, talukApi, hobliApi, shopApi } from '../services/api';
+import { districtApi, talukApi, hobliApi, shopApi, promoterSaleApi } from '../services/api';
 import './CommissionEngine.css';
 
 const commissionRules = [
@@ -11,51 +11,24 @@ const commissionRules = [
   { level: 'PROMOTERS', badge: 'promoter', perSale: '\u20B92,000', condition: 'KYC must be verified', deduction: '5% tds+ 5% svC' },
 ];
 
-const recentCommissions = [
-  {
-    date: '12 Mar 2026', time: '2:30 PM',
-    promoter: 'Sushant', code: 'KA-PA-001',
-    shop: 'Srinivasa Electronics', hobli: 'Jayapura Hobli',
-    product: '4K LED TV 65"', price: '42,000',
-    district: 'Mysuru', taluk: 'Nanjungud',
-    status: 'Credited', kyc: 'KYC Verified',
-  },
-  {
-    date: '11 Mar 2026', time: '11:30 AM',
-    promoter: 'Rahul', code: 'KA-PA-004',
-    shop: 'Lakshmi stores', hobli: 'Hunsur Town Hobli',
-    product: 'Washing Machine', price: '18,000',
-    district: 'Mysuru', taluk: 'Hunsur',
-    status: 'Pending', kyc: 'KYC Verified',
-  },
-  {
-    date: '10 Mar 2026', time: '12:30 PM',
-    promoter: 'Suresh', code: 'KA-PA-009',
-    shop: 'Srinivasa Electronics', hobli: 'Bettadapura Hobli',
-    product: 'LED TV "32', price: '22,000',
-    district: 'Mysuru', taluk: 'HD kote',
-    status: 'Credited', kyc: 'KYC Verified',
-  },
-];
-
-const breakdownData = {
-  promoter: { name: 'Sushant', code: 'KA-PA-001', email: 'Sushant@gmail.com', phone: '9089208890', role: 'Promoter', earned: '2000.00' },
-  breakdown: [
-    [
-      { level: 'State Admin', name: 'Suresh', amount: '\u20B91,000', status: 'Credited' },
-      { level: 'District Admin', name: 'Mahesh', amount: '\u20B9500', status: 'Credited', split: '50% Split' },
-      { level: 'Taluk Admin', name: 'Purav', amount: '\u20B91,000', status: 'Credited' },
-    ],
-    [
-      { level: 'Assistant District Admin', name: 'Ravi', amount: '\u20B91,000', status: 'Credited' },
-      { level: 'District Admin', name: 'Ankit', amount: '\u20B9300', status: 'Credited', split: '30% Split' },
-    ],
-    [
-      null,
-      { level: 'District Admin', name: 'Manish', amount: '\u20B9200', status: 'Credited', split: '20% Split' },
-    ],
-  ],
-};
+function formatSaleForDisplay(sale) {
+  const dt = new Date(sale.saleDate);
+  return {
+    _id: sale._id,
+    date: dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+    time: dt.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true }),
+    promoter: sale.promoterName || sale.promoterCode,
+    code: sale.promoterCode,
+    shop: sale.billingShop,
+    hobli: sale.hobli,
+    product: sale.quantity > 1 ? `${sale.productName} (x${sale.quantity})` : sale.productName,
+    price: sale.price || '-',
+    district: sale.district,
+    taluk: sale.taluk,
+    status: sale.status,
+    kyc: sale.kyc || 'KYC Verified',
+  };
+}
 
 export default function CommissionEngine() {
   const [activeTab, setActiveTab] = useState('simulator');
@@ -72,6 +45,15 @@ export default function CommissionEngine() {
   const [talukOptions, setTalukOptions] = useState([]);
   const [hobliOptions, setHobliOptions] = useState([]);
   const [shopOptions, setShopOptions] = useState([]);
+  const [promoterCodeError, setPromoterCodeError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  // Load promoter sales from backend
+  const loadSales = (params = {}) => {
+    promoterSaleApi.getAll(params)
+      .then(items => setCommissions(items.map(formatSaleForDisplay)))
+      .catch(() => setCommissions([]));
+  };
 
   useEffect(() => {
     districtApi.getAll()
@@ -99,18 +81,95 @@ export default function CommissionEngine() {
       .catch(() => setShopOptions([]));
   }, []);
 
-  const filteredShopOptions = simForm.hobli
-    ? shopOptions.filter(s => s.hobli === simForm.hobli)
-    : shopOptions;
+  const filteredShopOptions = shopOptions.filter(s => {
+    if (simForm.district && talukOptions.length > 0 && s.taluk && !talukOptions.includes(s.taluk)) return false;
+    if (simForm.taluk && s.taluk && s.taluk !== simForm.taluk) return false;
+    if (simForm.hobli && s.hobli && s.hobli !== simForm.hobli) return false;
+    return true;
+  });
+
+  // Commissions list (loaded from backend)
+  const [commissions, setCommissions] = useState([]);
+
+  const handleApplyCode = async () => {
+    if (!simForm.promoterCode || !simForm.district || !simForm.taluk || !simForm.hobli || !simForm.billingShop || !simForm.productName || !simForm.quantity || !simForm.dateTime) {
+      return;
+    }
+
+    const code = simForm.promoterCode.trim().toUpperCase();
+    if (!code.startsWith('KA-PA-')) {
+      if (code.startsWith('KA-DA-')) {
+        setPromoterCodeError('District Admin codes are not allowed. Please enter a Promoter code (KA-PA-XXX).');
+      } else if (code.startsWith('KA-TA-')) {
+        setPromoterCodeError('Taluk Admin codes are not allowed. Please enter a Promoter code (KA-PA-XXX).');
+      } else if (code.startsWith('KA-SA-')) {
+        setPromoterCodeError('State Admin codes are not allowed. Please enter a Promoter code (KA-PA-XXX).');
+      } else if (code.startsWith('KA-ADA-')) {
+        setPromoterCodeError('Ass. District Admin codes are not allowed. Please enter a Promoter code (KA-PA-XXX).');
+      } else {
+        setPromoterCodeError('Invalid code. Please enter a valid Promoter code (KA-PA-XXX).');
+      }
+      return;
+    }
+    setPromoterCodeError('');
+    setSubmitting(true);
+
+    try {
+      await promoterSaleApi.create({
+        promoterCode: code,
+        district: simForm.district,
+        taluk: simForm.taluk,
+        hobli: simForm.hobli,
+        billingShop: simForm.billingShop,
+        productName: simForm.productName,
+        quantity: simForm.quantity,
+        saleDate: simForm.dateTime,
+      });
+
+      setSimForm({
+        promoterCode: '', district: '', taluk: '', hobli: '',
+        billingShop: '',
+        productName: '', quantity: '', dateTime: '',
+      });
+      loadSales();
+      setActiveTab('overview');
+    } catch (err) {
+      setPromoterCodeError(err.message || 'Failed to save sale');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   // Overview filters
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
-  const [dateFilter, setDateFilter] = useState('last7');
+  const [dateFilter, setDateFilter] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
+  // Re-fetch when any filter changes
+  useEffect(() => {
+    const params = {};
+    if (searchQuery.trim()) params.search = searchQuery.trim();
+    if (roleFilter) params.status = roleFilter;
+    if (fromDate) {
+      params.from = fromDate;
+    } else if (dateFilter) {
+      const now = new Date();
+      const days = dateFilter === 'last7' ? 7 : dateFilter === 'last30' ? 30 : dateFilter === 'last90' ? 90 : 0;
+      if (days) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - days);
+        params.from = d.toISOString().split('T')[0];
+      }
+    }
+    if (toDate) params.to = toDate;
+    loadSales(params);
+  }, [searchQuery, roleFilter, dateFilter, fromDate, toDate]);
 
   // Detail view
   if (viewDetail) {
-    const p = breakdownData.promoter;
+    const c = viewDetail;
     return (
       <div className="ce">
         <h1 className="ce-title">Commission Engine</h1>
@@ -123,59 +182,50 @@ export default function CommissionEngine() {
             <div className="ce-profile-avatar"><MdPerson /></div>
             <div>
               <div>
-                <span className="ce-profile-name">{p.name}</span>
-                <span className="ce-profile-code">&middot; {p.code}</span>
+                <span className="ce-profile-name">{c.promoter}</span>
+                <span className="ce-profile-code">&middot; {c.code}</span>
               </div>
-              <div className="ce-profile-sub">{p.email} &middot; {p.phone}</div>
-              <span className="ce-profile-role">{p.role}</span>
+              <div className="ce-profile-sub">{c.district} &middot; {c.taluk} &middot; {c.hobli}</div>
+              <span className="ce-profile-role">Promoter</span>
             </div>
           </div>
           <div className="ce-profile-right">
             <div className="ce-profile-earned-label">Commission Earned</div>
-            <div className="ce-profile-earned-value">{'\u20B9'}{p.earned}</div>
+            <div className="ce-profile-earned-value">{'\u20B9'}2,000.00</div>
+          </div>
+        </div>
+
+        <div className="ce-breakdown-section">
+          <div className="ce-breakdown-title">SALE DETAILS</div>
+          <div className="ce-breakdown-row">
+            <div className="ce-breakdown-card">
+              <div className="ce-breakdown-level">Product</div>
+              <div className="ce-breakdown-name">{c.product}</div>
+              {c.price && c.price !== '-' && <div className="ce-breakdown-amount">{'\u20B9'}{c.price}</div>}
+            </div>
+            <div className="ce-breakdown-card">
+              <div className="ce-breakdown-level">Shop</div>
+              <div className="ce-breakdown-name">{c.shop}</div>
+              <div style={{ fontSize: 12, color: '#94a3b8' }}>{c.hobli}</div>
+            </div>
+            <div className="ce-breakdown-card">
+              <div className="ce-breakdown-level">Date</div>
+              <div className="ce-breakdown-name">{c.date}</div>
+              <div style={{ fontSize: 12, color: '#94a3b8' }}>{c.time}</div>
+            </div>
           </div>
         </div>
 
         <div className="ce-breakdown-section">
           <div className="ce-breakdown-title">COMMISSION BREAKDOWN</div>
-
-          {/* Row 1 */}
           <div className="ce-breakdown-row">
-            {breakdownData.breakdown[0].map((item, i) => item && (
+            {commissionRules.map((r, i) => (
               <div className="ce-breakdown-card" key={i}>
-                {item.split && <span className="ce-breakdown-split">{item.split}</span>}
-                <div className="ce-breakdown-level">{item.level}</div>
-                <div className="ce-breakdown-name">{item.name}</div>
-                <div className="ce-breakdown-amount">{item.amount}</div>
-                <span className="ce-breakdown-status">{item.status}</span>
+                <div className="ce-breakdown-level">{r.level}</div>
+                <div className="ce-breakdown-amount">{r.perSale}</div>
+                <span className={`ce-breakdown-status`}>{c.status}</span>
               </div>
             ))}
-          </div>
-
-          {/* Row 2 */}
-          <div className="ce-breakdown-row">
-            {breakdownData.breakdown[1].map((item, i) => item && (
-              <div className="ce-breakdown-card" key={i}>
-                {item.split && <span className="ce-breakdown-split">{item.split}</span>}
-                <div className="ce-breakdown-level">{item.level}</div>
-                <div className="ce-breakdown-name">{item.name}</div>
-                <div className="ce-breakdown-amount">{item.amount}</div>
-                <span className="ce-breakdown-status">{item.status}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Row 3 */}
-          <div className="ce-breakdown-row">
-            {breakdownData.breakdown[2].map((item, i) => item ? (
-              <div className="ce-breakdown-card" key={i}>
-                {item.split && <span className="ce-breakdown-split">{item.split}</span>}
-                <div className="ce-breakdown-level">{item.level}</div>
-                <div className="ce-breakdown-name">{item.name}</div>
-                <div className="ce-breakdown-amount">{item.amount}</div>
-                <span className="ce-breakdown-status">{item.status}</span>
-              </div>
-            ) : <div key={i} style={{ flex: 1, minWidth: 200 }} />)}
           </div>
         </div>
       </div>
@@ -198,14 +248,15 @@ export default function CommissionEngine() {
             <div className="ce-card-title">SALE SIMULATOR</div>
             <div className="ce-form-group">
               <label className="ce-label">Promoter Code</label>
-              <input className="ce-input" placeholder="Enter Promoter Code(Mobile Number)" value={simForm.promoterCode} onChange={e => setSimForm({...simForm, promoterCode: e.target.value})} />
+              <input className="ce-input" placeholder="Enter Promoter Code (e.g. KA-PA-001)" value={simForm.promoterCode} onChange={e => { setSimForm({...simForm, promoterCode: e.target.value}); setPromoterCodeError(''); }} />
+              {promoterCodeError && <span style={{ color: '#ef4444', fontSize: 12, marginTop: 4, display: 'block' }}>{promoterCodeError}</span>}
             </div>
             <div className="ce-form-group">
               <label className="ce-label">Select District</label>
               <select
                 className="ce-select"
                 value={simForm.district}
-                onChange={e => setSimForm({ ...simForm, district: e.target.value, taluk: '', hobli: '' })}
+                onChange={e => setSimForm({ ...simForm, district: e.target.value, taluk: '', hobli: '', billingShop: '' })}
               >
                 <option value="">Select District</option>
                 {districtOptions.map(d => <option key={d} value={d}>{d}</option>)}
@@ -216,7 +267,7 @@ export default function CommissionEngine() {
               <select
                 className="ce-select"
                 value={simForm.taluk}
-                onChange={e => setSimForm({ ...simForm, taluk: e.target.value, hobli: '' })}
+                onChange={e => setSimForm({ ...simForm, taluk: e.target.value, hobli: '', billingShop: '' })}
                 disabled={!simForm.district}
               >
                 <option value="">Select Taluk</option>
@@ -228,7 +279,7 @@ export default function CommissionEngine() {
               <select
                 className="ce-select"
                 value={simForm.hobli}
-                onChange={e => setSimForm({ ...simForm, hobli: e.target.value })}
+                onChange={e => setSimForm({ ...simForm, hobli: e.target.value, billingShop: '' })}
                 disabled={!simForm.taluk}
               >
                 <option value="">Select Hobli</option>
@@ -237,10 +288,13 @@ export default function CommissionEngine() {
             </div>
             <div className="ce-form-group">
               <label className="ce-label">Select Billing shop</label>
-              <select className="ce-select" value={simForm.billingShop} onChange={e => setSimForm({...simForm, billingShop: e.target.value})}>
-                <option>Lakshmi Electronics - Hunsur Town Hobli</option>
-                <option>Srinivasa Electronics - Jayapura Hobli</option>
-                <option>Star Appliances - Bettadapura Hobli</option>
+              <select className="ce-select" value={simForm.billingShop} onChange={e => setSimForm({...simForm, billingShop: e.target.value})} disabled={!simForm.district}>
+                <option value="">Select Billing Shop</option>
+                {filteredShopOptions.map(s => (
+                  <option key={s._id || s.shopCode || s.shopName} value={s.shopName}>
+                    {s.shopName}{s.hobli ? ` - ${s.hobli}` : ''}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="ce-form-group">
@@ -261,7 +315,7 @@ export default function CommissionEngine() {
               <label className="ce-label">Select Date & Time</label>
               <input type="datetime-local" className="ce-input" value={simForm.dateTime} onChange={e => setSimForm({...simForm, dateTime: e.target.value})} />
             </div>
-            <button className="ce-btn ce-btn-primary" style={{ marginTop: 8 }}>Apply Code</button>
+            <button className="ce-btn ce-btn-primary" style={{ marginTop: 8 }} onClick={handleApplyCode} disabled={submitting}>{submitting ? 'Saving...' : 'Apply Code'}</button>
           </div>
 
           <div className="ce-card">
@@ -313,7 +367,8 @@ export default function CommissionEngine() {
             </div>
             <div className="ce-form-group" style={{ marginBottom: 0 }}>
               <label className="ce-label">Select Date</label>
-              <select className="ce-select" style={{ minWidth: 140 }} value={dateFilter} onChange={e => setDateFilter(e.target.value)}>
+              <select className="ce-select" style={{ minWidth: 140 }} value={dateFilter} onChange={e => { setDateFilter(e.target.value); if (e.target.value) { setFromDate(''); setToDate(''); } }}>
+                <option value="">All Time</option>
                 <option value="last7">Last 7 days</option>
                 <option value="last30">Last 30 days</option>
                 <option value="last90">Last 90 days</option>
@@ -321,11 +376,11 @@ export default function CommissionEngine() {
             </div>
             <div className="ce-form-group" style={{ marginBottom: 0 }}>
               <label className="ce-label">From</label>
-              <input type="date" className="ce-input" style={{ minWidth: 140 }} />
+              <input type="date" className="ce-input" style={{ minWidth: 140 }} value={fromDate} onChange={e => { setFromDate(e.target.value); if (e.target.value) setDateFilter(''); }} />
             </div>
             <div className="ce-form-group" style={{ marginBottom: 0 }}>
               <label className="ce-label">To</label>
-              <input type="date" className="ce-input" style={{ minWidth: 140 }} />
+              <input type="date" className="ce-input" style={{ minWidth: 140 }} value={toDate} onChange={e => { setToDate(e.target.value); if (e.target.value) setDateFilter(''); }} />
             </div>
           </div>
 
@@ -344,7 +399,7 @@ export default function CommissionEngine() {
                 </tr>
               </thead>
               <tbody>
-                {recentCommissions.map((c, i) => (
+                {commissions.map((c, i) => (
                   <tr key={i}>
                     <td>
                       <span style={{ fontWeight: 500 }}>{c.date}</span><br />
@@ -360,7 +415,7 @@ export default function CommissionEngine() {
                     </td>
                     <td>
                       <span style={{ fontWeight: 500, display: 'block' }}>{c.product}</span>
-                      <span style={{ fontSize: 12, color: '#64748b' }}>{'\u20B9'}{c.price}</span>
+                      <span style={{ fontSize: 12, color: '#64748b' }}>{c.price && c.price !== '-' ? `\u20B9${c.price}` : '-'}</span>
                     </td>
                     <td>{c.district}</td>
                     <td>{c.taluk}</td>

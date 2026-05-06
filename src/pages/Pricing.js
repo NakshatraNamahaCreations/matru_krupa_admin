@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   MdEdit,
   MdDelete,
@@ -6,151 +6,19 @@ import {
   MdKeyboardArrowUp,
   MdSearch,
   MdFilterList,
-
+  MdAdd,
   MdTrendingUp,
   MdWarning,
   MdError,
   MdToggleOn,
   MdToggleOff,
 } from 'react-icons/md';
+import { centralPriceApi, franchiseTierApi } from '../services/api';
 import './Pricing.css';
 
 /* ==============================
-   DATA
+   DATA (Coupon / Tax - still local)
    ============================== */
-
-const initialPriceList = [
-  {
-    id: 1,
-    productName: '4K LED TV',
-    category: 'Television',
-    subcategory: 'LED TV',
-    brand: 'Sony',
-    hsnCode: '967428',
-    basePurchasePrice: '\u20B941,000',
-    b2cMRP: '\u20B944,000',
-    b2bMRP: '\u20B942,000',
-    maxDiscount: '10%',
-    currentEffectivePrice: '\u20B943,500',
-    priceListName: 'Default',
-    region: 'All India',
-    channel: 'E-com',
-    effectiveFrom: '01/12/2025',
-    effectiveTill: '01/12/2025',
-    status: 'Active',
-    lastUpdatedBy: 'Admin',
-    lastUpdatedOn: '29/11/2025 11:30 AM',
-  },
-  {
-    id: 2,
-    productName: 'Double Door Refrigerator',
-    category: 'Appliances',
-    subcategory: 'Refrigerator',
-    brand: 'LG',
-    hsnCode: '84182110',
-    basePurchasePrice: '\u20B919,800',
-    b2cMRP: '\u20B923,000',
-    b2bMRP: '\u20B920,500',
-    maxDiscount: '12%',
-    currentEffectivePrice: '\u20B922,300',
-    priceListName: 'Winter Appliance Sale 2025',
-    region: 'Karnataka',
-    channel: 'Franchise',
-    effectiveFrom: '05/12/2025',
-    effectiveTill: '06/01/2026',
-    status: 'Scheduled',
-    lastUpdatedBy: 'Pricing Team',
-    lastUpdatedOn: '29/11/2025 11:30 AM',
-  },
-  {
-    id: 3,
-    productName: 'Front Load Washing Machine',
-    category: 'Appliances',
-    subcategory: 'Washing Machine',
-    brand: 'LG',
-    hsnCode: '78218B6',
-    basePurchasePrice: '\u20B929,800',
-    b2cMRP: '\u20B926,000',
-    b2bMRP: '\u20B924,500',
-    maxDiscount: '14%',
-    currentEffectivePrice: '\u20B925,000',
-    priceListName: 'Clearance',
-    region: 'Karnataka',
-    channel: 'Franchise',
-    effectiveFrom: '29/11/2025',
-    effectiveTill: '06/12/2025',
-    status: 'Active',
-    lastUpdatedBy: 'Pricing Team',
-    lastUpdatedOn: '29/11/2025 11:30 PM',
-  },
-];
-
-const franchiseTierData = [
-  {
-    id: 1,
-    franchiseName: 'North Branch',
-    region: 'North',
-    tier: 'A',
-    productName: '4K LED TV',
-    sku: 'SKU2346',
-    basePurchaseB2B: '\u20B944,000',
-    tierPrice: '\u20B941,000',
-    maxDiscount: '20%',
-    effectiveFrom: '01/12/2025',
-    effectiveTill: '01/12/2025',
-    lastUpdatedBy: 'Admin',
-    lastUpdatedOn: '28/11/2025 11:30 AM',
-    status: 'Active',
-  },
-  {
-    id: 2,
-    franchiseName: 'Central Hub',
-    region: 'Central',
-    tier: 'B',
-    productName: '4K LED TV',
-    sku: 'SKU3448',
-    basePurchaseB2B: '\u20B944,000',
-    tierPrice: '\u20B942,000',
-    maxDiscount: '16%',
-    effectiveFrom: '05/12/2025',
-    effectiveTill: '06/01/2026',
-    lastUpdatedBy: 'Pricing Team',
-    lastUpdatedOn: '29/11/2025 11:30 AM',
-    status: 'Scheduled',
-  },
-  {
-    id: 3,
-    franchiseName: 'South Outlet',
-    region: 'South',
-    tier: 'C',
-    productName: 'Front Load Washing Machine',
-    sku: 'SKU4242',
-    basePurchaseB2B: '\u20B927,000',
-    tierPrice: '\u20B928,500',
-    maxDiscount: '10%',
-    effectiveFrom: '29/11/2025',
-    effectiveTill: '06/12/2025',
-    lastUpdatedBy: 'Pricing Team',
-    lastUpdatedOn: '28/11/2025 11:30 PM',
-    status: 'Active',
-  },
-  {
-    id: 4,
-    franchiseName: 'City Central',
-    region: 'All-India',
-    tier: 'A',
-    productName: 'Air Conditioner',
-    sku: 'SKU2442',
-    basePurchaseB2B: '\u20B925,000',
-    tierPrice: '\u20B921,000',
-    maxDiscount: '10%',
-    effectiveFrom: '29/11/2025',
-    effectiveTill: '06/12/2025',
-    lastUpdatedBy: 'Pricing Team',
-    lastUpdatedOn: '28/11/2025 11:30 PM',
-    status: 'Inactive',
-  },
-];
 
 const couponData = [
   { id: 1, code: 'SUMMER25', audience: 'All Users', discount: '25%', effectiveFrom: '01/12/2025', effectiveTill: '01/12/2025', status: 'Active', active: true },
@@ -179,16 +47,62 @@ const SUB_VIEWS = [
 
 function CentralPriceList() {
   const [search, setSearch] = useState('');
+  const [priceList, setPriceList] = useState([]);
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({});
+  const [saving, setSaving] = useState(false);
 
-  const filtered = initialPriceList.filter(
-    (item) =>
-      item.productName.toLowerCase().includes(search.toLowerCase()) ||
-      item.region.toLowerCase().includes(search.toLowerCase())
-  );
+  const loadPrices = useCallback(async (params = {}) => {
+    try {
+      const data = await centralPriceApi.getAll(params);
+      setPriceList(data);
+    } catch (err) {
+      console.error('Failed to load central prices:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadPrices();
+  }, [loadPrices]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadPrices(search ? { search } : {});
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search, loadPrices]);
+
+  const handleAdd = () => {
+    setFormData({
+      productName: '',
+      category: '',
+      subcategory: '',
+      brand: '',
+      hsnCode: '',
+      basePurchasePrice: '',
+      b2cMRP: '',
+      b2bMRP: '',
+      maxDiscount: '',
+      currentEffectivePrice: '',
+      priceListName: '',
+      region: '',
+      channel: '',
+      effectiveFrom: '',
+      effectiveTill: '',
+      lastUpdatedBy: '',
+      status: 'Active',
+    });
+    setEditingItem({ isNew: true });
+  };
 
   const handleEdit = (item) => {
+    // Convert display dates (DD/MM/YYYY) to input date format (YYYY-MM-DD)
+    const parseDisplayDate = (d) => {
+      if (!d) return '';
+      const parts = d.split('/');
+      if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      return d;
+    };
     setFormData({
       productName: item.productName,
       category: item.category,
@@ -203,10 +117,9 @@ function CentralPriceList() {
       priceListName: item.priceListName,
       region: item.region,
       channel: item.channel,
-      effectiveFrom: item.effectiveFrom,
-      effectiveTill: item.effectiveTill,
+      effectiveFrom: parseDisplayDate(item.effectiveFrom),
+      effectiveTill: parseDisplayDate(item.effectiveTill),
       lastUpdatedBy: item.lastUpdatedBy,
-      lastUpdatedOn: item.lastUpdatedOn,
       status: item.status,
     });
     setEditingItem(item);
@@ -216,10 +129,37 @@ function CentralPriceList() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      if (editingItem?.isNew) {
+        await centralPriceApi.create(formData);
+      } else {
+        await centralPriceApi.update(editingItem._id, formData);
+      }
+      setEditingItem(null);
+      loadPrices();
+    } catch (err) {
+      alert(err.message || 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this price entry?')) return;
+    try {
+      await centralPriceApi.delete(id);
+      loadPrices();
+    } catch (err) {
+      alert(err.message || 'Failed to delete');
+    }
+  };
+
   if (editingItem) {
     return (
       <div className="pricing-form-card">
-        <h2 className="pricing-form-title">Add / Edit Central Price List</h2>
+        <h2 className="pricing-form-title">{editingItem?.isNew ? 'Add Central Price List' : 'Edit Central Price List'}</h2>
         <div className="pricing-form-grid">
           <div className="pricing-form-row pricing-form-full">
             <label>Product Name</label>
@@ -281,14 +221,6 @@ function CentralPriceList() {
             <label>Effective Till</label>
             <input type="date" value={formData.effectiveTill} onChange={(e) => handleFormChange('effectiveTill', e.target.value)} />
           </div>
-          <div className="pricing-form-row">
-            <label>Last Updated by</label>
-            <input type="text" value={formData.lastUpdatedBy} onChange={(e) => handleFormChange('lastUpdatedBy', e.target.value)} />
-          </div>
-          <div className="pricing-form-row">
-            <label>Last Updated On</label>
-            <input type="date" value={formData.lastUpdatedOn} onChange={(e) => handleFormChange('lastUpdatedOn', e.target.value)} />
-          </div>
           <div className="pricing-form-row pricing-form-full">
             <label>Status</label>
             <select value={formData.status} onChange={(e) => handleFormChange('status', e.target.value)}>
@@ -298,7 +230,9 @@ function CentralPriceList() {
             </select>
           </div>
           <div className="pricing-form-actions pricing-form-full">
-            <button className="pricing-btn-primary pricing-btn-wide">Save</button>
+            <button className="pricing-btn-primary pricing-btn-wide" onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving...' : 'Save'}
+            </button>
             <button className="pricing-btn-outline pricing-btn-wide" onClick={() => setEditingItem(null)}>Back</button>
           </div>
         </div>
@@ -318,6 +252,9 @@ function CentralPriceList() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <button className="pricing-btn-primary" onClick={handleAdd}>
+          <MdAdd /> Add Price
+        </button>
       </div>
       <div className="pricing-table-wrapper">
         <table className="pricing-table">
@@ -345,8 +282,8 @@ function CentralPriceList() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((item) => (
-              <tr key={item.id}>
+            {priceList.map((item) => (
+              <tr key={item._id}>
                 <td>{item.productName}</td>
                 <td>{item.category}</td>
                 <td>{item.subcategory}</td>
@@ -374,14 +311,14 @@ function CentralPriceList() {
                     <button className="pricing-edit-btn" title="Edit" onClick={() => handleEdit(item)}>
                       <MdEdit />
                     </button>
-                    <button className="pricing-delete-btn" title="Delete">
+                    <button className="pricing-delete-btn" title="Delete" onClick={() => handleDelete(item._id)}>
                       <MdDelete />
                     </button>
                   </div>
                 </td>
               </tr>
             ))}
-            {filtered.length === 0 && (
+            {priceList.length === 0 && (
               <tr>
                 <td colSpan="19" className="pricing-empty">No pricing records found.</td>
               </tr>
@@ -399,17 +336,54 @@ function CentralPriceList() {
 
 function FranchisePricingTiers() {
   const [search, setSearch] = useState('');
+  const [tiers, setTiers] = useState([]);
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({});
+  const [saving, setSaving] = useState(false);
 
-  const filtered = franchiseTierData.filter(
-    (item) =>
-      item.franchiseName.toLowerCase().includes(search.toLowerCase()) ||
-      item.region.toLowerCase().includes(search.toLowerCase()) ||
-      item.productName.toLowerCase().includes(search.toLowerCase())
-  );
+  const loadTiers = useCallback(async (params = {}) => {
+    try {
+      const data = await franchiseTierApi.getAll(params);
+      setTiers(data);
+    } catch (err) {
+      console.error('Failed to load franchise tiers:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadTiers();
+  }, [loadTiers]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadTiers(search ? { search } : {});
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search, loadTiers]);
+
+  const handleAdd = () => {
+    setFormData({
+      franchiseName: '',
+      region: '',
+      tier: 'A',
+      productName: '',
+      sku: '',
+      tierPrice: '',
+      maxDiscount: '',
+      effectiveFrom: '',
+      effectiveTill: '',
+      status: 'Active',
+    });
+    setEditingItem({ isNew: true });
+  };
 
   const handleEdit = (item) => {
+    const parseDisplayDate = (d) => {
+      if (!d) return '';
+      const parts = d.split('/');
+      if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      return d;
+    };
     setFormData({
       franchiseName: item.franchiseName,
       region: item.region,
@@ -418,6 +392,8 @@ function FranchisePricingTiers() {
       sku: item.sku,
       tierPrice: item.tierPrice,
       maxDiscount: item.maxDiscount,
+      effectiveFrom: parseDisplayDate(item.effectiveFrom),
+      effectiveTill: parseDisplayDate(item.effectiveTill),
       status: item.status,
     });
     setEditingItem(item);
@@ -427,10 +403,37 @@ function FranchisePricingTiers() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      if (editingItem?.isNew) {
+        await franchiseTierApi.create(formData);
+      } else {
+        await franchiseTierApi.update(editingItem._id, formData);
+      }
+      setEditingItem(null);
+      loadTiers();
+    } catch (err) {
+      alert(err.message || 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this franchise tier?')) return;
+    try {
+      await franchiseTierApi.delete(id);
+      loadTiers();
+    } catch (err) {
+      alert(err.message || 'Failed to delete');
+    }
+  };
+
   if (editingItem) {
     return (
       <div className="pricing-form-card">
-        <h2 className="pricing-form-title">Edit Franchise Tier</h2>
+        <h2 className="pricing-form-title">{editingItem?.isNew ? 'Add Franchise Tier' : 'Edit Franchise Tier'}</h2>
         <div className="pricing-form-grid">
           <div className="pricing-form-row pricing-form-full">
             <label>Franchise Name</label>
@@ -464,6 +467,14 @@ function FranchisePricingTiers() {
             <label>Max Discount %</label>
             <input type="text" value={formData.maxDiscount} onChange={(e) => handleFormChange('maxDiscount', e.target.value)} />
           </div>
+          <div className="pricing-form-row">
+            <label>Effective From</label>
+            <input type="date" value={formData.effectiveFrom} onChange={(e) => handleFormChange('effectiveFrom', e.target.value)} />
+          </div>
+          <div className="pricing-form-row">
+            <label>Effective Till</label>
+            <input type="date" value={formData.effectiveTill} onChange={(e) => handleFormChange('effectiveTill', e.target.value)} />
+          </div>
           <div className="pricing-form-row pricing-form-full">
             <label>Status</label>
             <select value={formData.status} onChange={(e) => handleFormChange('status', e.target.value)}>
@@ -473,7 +484,9 @@ function FranchisePricingTiers() {
             </select>
           </div>
           <div className="pricing-form-actions pricing-form-full">
-            <button className="pricing-btn-primary pricing-btn-wide">Save</button>
+            <button className="pricing-btn-primary pricing-btn-wide" onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving...' : 'Save'}
+            </button>
             <button className="pricing-btn-outline pricing-btn-wide" onClick={() => setEditingItem(null)}>Back</button>
           </div>
         </div>
@@ -495,6 +508,9 @@ function FranchisePricingTiers() {
         </div>
         <button className="pricing-filter-btn">
           <MdFilterList /> Filter
+        </button>
+        <button className="pricing-btn-primary" onClick={handleAdd}>
+          <MdAdd /> Add Tier
         </button>
       </div>
       <div className="pricing-table-wrapper">
@@ -518,8 +534,8 @@ function FranchisePricingTiers() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((item) => (
-              <tr key={item.id}>
+            {tiers.map((item) => (
+              <tr key={item._id}>
                 <td>{item.franchiseName}</td>
                 <td>{item.region}</td>
                 <td>{item.tier}</td>
@@ -542,14 +558,14 @@ function FranchisePricingTiers() {
                     <button className="pricing-edit-btn" title="Edit" onClick={() => handleEdit(item)}>
                       <MdEdit />
                     </button>
-                    <button className="pricing-delete-btn" title="Delete">
+                    <button className="pricing-delete-btn" title="Delete" onClick={() => handleDelete(item._id)}>
                       <MdDelete />
                     </button>
                   </div>
                 </td>
               </tr>
             ))}
-            {filtered.length === 0 && (
+            {tiers.length === 0 && (
               <tr>
                 <td colSpan="14" className="pricing-empty">No franchise tier records found.</td>
               </tr>

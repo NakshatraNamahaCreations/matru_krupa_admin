@@ -47,6 +47,36 @@
   margin-bottom: 28px;
 }
 
+/* Role Selector */
+.login-role-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.login-role-btn {
+  flex: 1;
+  padding: 10px 8px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  background: #f8f8f8;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.login-role-btn:hover {
+  border-color: #bbb;
+}
+
+.login-role-btn.active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
 .login-error {
   background: #fef2f2;
   color: #dc2626;

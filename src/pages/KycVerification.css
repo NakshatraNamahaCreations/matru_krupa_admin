@@ -1,9 +1,9 @@
 .kyc {
   flex: 1;
-  padding: 24px 32px;
+  padding: 10px 22px;
   background: #f1f5f9;
   overflow-y: auto;
-  min-height: 100vh;
+  /* min-height: 100vh; */
 }
 
 .kyc-title {

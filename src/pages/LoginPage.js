@@ -7,7 +7,7 @@ import './LoginPage.css';
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '', loginType: 'staff' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
@@ -17,7 +17,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await login(form.email, form.password);
+      await login(form.email, form.password, form.loginType);
       navigate('/');
     } catch (err) {
       setError(err.message);
@@ -35,6 +35,24 @@ export default function LoginPage() {
         </div>
 
         <h2 className="login-card__title">Sign in to continue</h2>
+
+        {/* Role Selector */}
+        <div className="login-role-selector">
+          <button
+            type="button"
+            className={`login-role-btn ${form.loginType === 'staff' ? 'active' : ''}`}
+            onClick={() => setForm({ ...form, loginType: 'staff' })}
+          >
+            Staff / Super Admin
+          </button>
+          <button
+            type="button"
+            className={`login-role-btn ${form.loginType === 'hierarchy' ? 'active' : ''}`}
+            onClick={() => setForm({ ...form, loginType: 'hierarchy' })}
+          >
+            District / Taluk / Promoter
+          </button>
+        </div>
 
         {error && <div className="login-error">{error}</div>}
 

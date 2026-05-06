@@ -201,6 +201,26 @@ export const districtSplitApi = {
     }),
 };
 
+// ─── Promoter Sales ──────────────────────────────────
+export const promoterSaleApi = {
+  getAll: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/hierarchy/promoter-sales${query ? `?${query}` : ""}`);
+  },
+  create: (data) =>
+    request("/hierarchy/promoter-sales", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  updateStatus: (id, status) =>
+    request(`/hierarchy/promoter-sales/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }),
+  delete: (id) =>
+    request(`/hierarchy/promoter-sales/${id}`, { method: "DELETE" }),
+};
+
 // ─── Locations (Districts / Taluks / Hoblis) ───────────
 export const districtApi = {
   getAll: () => request("/hierarchy/districts"),
@@ -251,4 +271,132 @@ export const hobliApi = {
       body: JSON.stringify(data),
     }),
   delete: (id) => request(`/hierarchy/hoblis/${id}`, { method: "DELETE" }),
+};
+
+// ─── Inventory / Warehouse ───────────────────────────
+
+export const centralStockApi = {
+  getAll: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/inventory/central-stock${query ? `?${query}` : ""}`);
+  },
+};
+
+export const reservationApi = {
+  getAll: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/inventory/reservations${query ? `?${query}` : ""}`);
+  },
+  create: (data) =>
+    request("/inventory/reservations", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (id, data) =>
+    request(`/inventory/reservations/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  delete: (id) => request(`/inventory/reservations/${id}`, { method: "DELETE" }),
+};
+
+export const reorderSuggestionApi = {
+  getAll: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/inventory/reorder-suggestions${query ? `?${query}` : ""}`);
+  },
+  create: (data) =>
+    request("/inventory/reorder-suggestions", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (id, data) =>
+    request(`/inventory/reorder-suggestions/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  toggle: (id) =>
+    request(`/inventory/reorder-suggestions/${id}/toggle`, { method: "PATCH" }),
+  delete: (id) =>
+    request(`/inventory/reorder-suggestions/${id}`, { method: "DELETE" }),
+};
+
+export const binRackApi = {
+  getAll: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/inventory/bin-rack${query ? `?${query}` : ""}`);
+  },
+  create: (data) =>
+    request("/inventory/bin-rack", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (id, data) =>
+    request(`/inventory/bin-rack/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  delete: (id) => request(`/inventory/bin-rack/${id}`, { method: "DELETE" }),
+};
+
+// ─── Pricing ──────────────────────────────────────────
+
+export const centralPriceApi = {
+  getAll: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/pricing/central${query ? `?${query}` : ""}`);
+  },
+  create: (data) =>
+    request("/pricing/central", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (id, data) =>
+    request(`/pricing/central/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  delete: (id) => request(`/pricing/central/${id}`, { method: "DELETE" }),
+};
+
+export const franchiseTierApi = {
+  getAll: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/pricing/franchise${query ? `?${query}` : ""}`);
+  },
+  create: (data) =>
+    request("/pricing/franchise", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (id, data) =>
+    request(`/pricing/franchise/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  delete: (id) => request(`/pricing/franchise/${id}`, { method: "DELETE" }),
+};
+
+export const damageReportApi = {
+  getAll: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/inventory/damage-reports${query ? `?${query}` : ""}`);
+  },
+  create: (data) =>
+    request("/inventory/damage-reports", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (id, data) =>
+    request(`/inventory/damage-reports/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  updateStatus: (id, status) =>
+    request(`/inventory/damage-reports/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }),
+  delete: (id) =>
+    request(`/inventory/damage-reports/${id}`, { method: "DELETE" }),
 };

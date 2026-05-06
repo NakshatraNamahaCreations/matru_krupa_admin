@@ -276,3 +276,121 @@
 .franchise-table tr:hover td {
   background: #f8fafc;
 }
+
+/* Bottom row layout */
+.dashboard-bottom-row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 20px;
+}
+
+/* SKU name truncate */
+.sku-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100px;
+}
+
+.sku-count {
+  font-size: 12px;
+  color: #64748b;
+  white-space: nowrap;
+  flex-shrink: 0;
+  width: 60px;
+  text-align: right;
+}
+
+.sku-empty {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+  padding: 20px 0;
+}
+
+/* Order status badges */
+.order-status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.order-status-placed {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.order-status-confirmed {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.order-status-shipped {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.order-status-delivered {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.order-status-cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Quick Stats Card */
+.quick-stats-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.quick-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.quick-stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.quick-stat-item:last-child {
+  border-bottom: none;
+}
+
+.quick-stat-label {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.quick-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.quick-stat-value.pending {
+  color: #ea580c;
+}
+
+@media (max-width: 900px) {
+  .stat-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .charts-section,
+  .dashboard-bottom-row {
+    grid-template-columns: 1fr;
+  }
+}

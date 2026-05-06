@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   MdSearch,
   MdFilterList,
@@ -14,46 +14,14 @@ import {
   MdCalendarToday,
   MdArrowBack,
 } from 'react-icons/md';
+import {
+  centralStockApi,
+  reservationApi,
+  reorderSuggestionApi,
+  binRackApi,
+  damageReportApi,
+} from '../services/api';
 import './InventoryWarehouse.css';
-
-/* ==============================
-   SUB-VIEW DATA
-   ============================== */
-
-const centralStockData = [
-  { sku: 'SKU12345', name: '4K LED Television', category: 'Television', brand: 'Sony Bravia', stock: '1,000' },
-  { sku: 'SKU25455', name: 'Double Door Refrigerator', category: 'Refrigerator', brand: 'LG', stock: '100' },
-  { sku: 'SKU34567', name: 'Front Load Washing Machine', category: 'Washing Machine', brand: 'Samsung', stock: '300' },
-  { sku: 'SKU46967', name: 'Electric Kettle', category: 'Appliances', brand: 'Wonderchef', stock: '190' },
-];
-
-const autoReservationData = [
-  { orderId: '#12345', channel: 'Franchise', sku: 'AC234', qty: 10, reservedOn: 'Jan 16 2024', status: 'Confirmed' },
-  { orderId: '#23446', channel: 'E-Commerce', sku: 'FGH789', qty: 3, reservedOn: 'Jan 16 2024', status: 'Pending' },
-  { orderId: '#214242', channel: 'E-Commerce', sku: 'JK878', qty: 1, reservedOn: 'Jan 15 2024', status: 'Confirmed' },
-  { orderId: '#422442', channel: 'Franchise', sku: 'ABX234', qty: 5, reservedOn: 'Jan 14 2024', status: 'Pending' },
-];
-
-const reorderData = [
-  { sku: 'SKU2345', name: '4K LED TV', velocity: '120 units', currentStock: 100, safetyStock: 150, leadTime: '10 days', trend: 'High', reorderQty: 1250 },
-  { sku: 'SKU3446', name: 'Double Door Refrigerator', velocity: '45 units', currentStock: 20, safetyStock: 50, leadTime: '7 days', trend: 'Stable', reorderQty: 330 },
-  { sku: 'SKU4242', name: 'Front Load Washing Machine', velocity: '18 units', currentStock: 12, safetyStock: 25, leadTime: '5 days', trend: 'Low', reorderQty: 103 },
-  { sku: 'SKU2442', name: 'Air Conditioner', velocity: '60 units', currentStock: 15, safetyStock: 35, leadTime: '3 days', trend: 'High', reorderQty: 210 },
-];
-
-const binRackData = [
-  { sku: 'SKU2345', name: '4K LED TV', category: 'Television', rack: 'R12', shelf: 'S2', zone: 'A', storage: 'Bulky' },
-  { sku: 'SKU3446', name: 'Double Door Refrigerator', category: 'Refrigerator', rack: 'R07', shelf: 'S3', zone: 'C', storage: 'Heavy' },
-  { sku: 'SKU4242', name: 'Front Load Washing Machine', category: 'Washing Machine', rack: 'R01', shelf: 'S16', zone: 'F', storage: 'Bulky' },
-  { sku: 'SKU2442', name: 'Split Air Conditioner', category: 'Air Conditioner', rack: 'R11', shelf: 'S4', zone: 'D', storage: 'Bulky' },
-];
-
-const damageData = [
-  { reportId: 'DR-00012', reportedOn: '28/11/025 11:30AM', reportedBy: 'Ramesh Kumar (WH-02)', sku: 'SKU2345', bin: 'A1-S2', type: 'Damaged', qty: 1, status: 'Disapproved' },
-  { reportId: 'DR-00011', reportedOn: '22/11/025 12:30PM', reportedBy: 'Ramya (FR-01)', sku: 'SKU3446', bin: 'D4-S1', type: 'Lost', qty: 3, status: 'Approved' },
-  { reportId: 'DR-00009', reportedOn: '14/10/025 09:30AM', reportedBy: 'Satish Kumar (WH-09)', sku: 'SKU4242', bin: 'B2-S9', type: 'Theft', qty: 1, status: 'Approved' },
-  { reportId: 'DR-00001', reportedOn: '28/09/025 11:30AM', reportedBy: 'Sandhya (FR-04)', sku: 'SKU2442', bin: '-', type: 'Courier Return', qty: 9, status: 'Disapproved' },
-];
 
 /* ==============================
    SUB-VIEW COMPONENTS
@@ -62,12 +30,26 @@ const damageData = [
 function CentralStockDashboard() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
+  const [items, setItems] = useState([]);
+  const [totalStock, setTotalStock] = useState(0);
+  const [categories, setCategories] = useState([]);
 
-  const filtered = centralStockData.filter((r) => {
-    const matchSearch = r.name.toLowerCase().includes(search.toLowerCase());
-    const matchCat = category ? r.category === category : true;
-    return matchSearch && matchCat;
-  });
+  useEffect(() => {
+    const params = {};
+    if (search.trim()) params.search = search.trim();
+    if (category) params.category = category;
+    centralStockApi.getAll(params)
+      .then((data) => {
+        setItems(data.items || []);
+        setTotalStock(data.totalStock || 0);
+        // Build unique category list from results
+        if (!category && !search) {
+          const cats = [...new Set((data.items || []).map((i) => i.category).filter(Boolean))];
+          setCategories(cats);
+        }
+      })
+      .catch(() => { setItems([]); setTotalStock(0); });
+  }, [search, category]);
 
   return (
     <div className="iw-subview">
@@ -84,10 +66,7 @@ function CentralStockDashboard() {
           </div>
           <select className="iw-select" value={category} onChange={(e) => setCategory(e.target.value)}>
             <option value="">Category</option>
-            <option value="Television">Television</option>
-            <option value="Refrigerator">Refrigerator</option>
-            <option value="Washing Machine">Washing Machine</option>
-            <option value="Appliances">Appliances</option>
+            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
       </div>
@@ -104,16 +83,16 @@ function CentralStockDashboard() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((row, i) => (
-              <tr key={i}>
+            {items.map((row) => (
+              <tr key={row._id || row.sku}>
                 <td>{row.sku}</td>
                 <td>{row.name}</td>
                 <td>{row.category}</td>
                 <td>{row.brand}</td>
-                <td>{row.stock}</td>
+                <td>{row.stock?.toLocaleString('en-IN') ?? 0}</td>
               </tr>
             ))}
-            {filtered.length === 0 && (
+            {items.length === 0 && (
               <tr>
                 <td colSpan="5" className="iw-empty">No products found.</td>
               </tr>
@@ -122,7 +101,7 @@ function CentralStockDashboard() {
           <tfoot>
             <tr>
               <td colSpan="4" className="iw-footer-label">Tot:</td>
-              <td className="iw-footer-value">1,590</td>
+              <td className="iw-footer-value">{totalStock.toLocaleString('en-IN')}</td>
             </tr>
           </tfoot>
         </table>
@@ -133,9 +112,40 @@ function CentralStockDashboard() {
 
 function AutoReservation() {
   const [search, setSearch] = useState('');
-  const [date, setDate] = useState('2024-01-16');
+  const [date, setDate] = useState('');
+  const [items, setItems] = useState([]);
   const [detailItem, setDetailItem] = useState(null);
   const [editStatus, setEditStatus] = useState('');
+
+  const loadReservations = () => {
+    const params = {};
+    if (search.trim()) params.search = search.trim();
+    if (date) params.date = date;
+    reservationApi.getAll(params)
+      .then((data) => setItems(data))
+      .catch(() => setItems([]));
+  };
+
+  useEffect(() => { loadReservations(); }, [search, date]);
+
+  const handleSave = async () => {
+    if (!detailItem?._id) { setDetailItem(null); return; }
+    try {
+      await reservationApi.update(detailItem._id, { status: editStatus });
+      setDetailItem(null);
+      loadReservations();
+    } catch { setDetailItem(null); }
+  };
+
+  const formatDate = (d) => {
+    if (!d) return '';
+    return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+
+  const toInputDate = (d) => {
+    if (!d) return '';
+    return new Date(d).toISOString().split('T')[0];
+  };
 
   if (detailItem) {
     return (
@@ -161,7 +171,7 @@ function AutoReservation() {
             </div>
             <div className="iw-form-group">
               <label>Reserved on</label>
-              <input type="date" defaultValue="2024-01-16" />
+              <input type="date" value={toInputDate(detailItem.reservedOn)} readOnly />
             </div>
             <div className="iw-form-group">
               <label>Status</label>
@@ -172,7 +182,7 @@ function AutoReservation() {
             </div>
           </div>
           <div className="iw-detail-actions">
-            <button className="iw-btn iw-btn-primary" onClick={() => setDetailItem(null)}>Save</button>
+            <button className="iw-btn iw-btn-primary" onClick={handleSave}>Save</button>
             <button className="iw-btn iw-btn-outline" onClick={() => setDetailItem(null)}>
               <MdArrowBack /> Back
             </button>
@@ -218,13 +228,13 @@ function AutoReservation() {
             </tr>
           </thead>
           <tbody>
-            {autoReservationData.map((row, i) => (
-              <tr key={i}>
+            {items.map((row) => (
+              <tr key={row._id}>
                 <td>{row.orderId}</td>
                 <td>{row.channel}</td>
                 <td>{row.sku}</td>
                 <td>{row.qty}</td>
-                <td>{row.reservedOn}</td>
+                <td>{formatDate(row.reservedOn)}</td>
                 <td>
                   <span className={`iw-badge ${row.status === 'Confirmed' ? 'iw-badge-green' : 'iw-badge-orange'}`}>
                     {row.status}
@@ -250,6 +260,9 @@ function AutoReservation() {
                 </td>
               </tr>
             ))}
+            {items.length === 0 && (
+              <tr><td colSpan="7" className="iw-empty">No reservations found.</td></tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -259,7 +272,17 @@ function AutoReservation() {
 
 function ReorderSuggestions() {
   const [search, setSearch] = useState('');
-  const [items, setItems] = useState(reorderData);
+  const [items, setItems] = useState([]);
+
+  const loadData = () => {
+    const params = {};
+    if (search.trim()) params.search = search.trim();
+    reorderSuggestionApi.getAll(params)
+      .then((data) => setItems(data))
+      .catch(() => setItems([]));
+  };
+
+  useEffect(() => { loadData(); }, [search]);
 
   const trendIcon = (trend) => {
     if (trend === 'High') return <span className="iw-trend iw-trend-high"><MdArrowUpward /> High</span>;
@@ -267,11 +290,19 @@ function ReorderSuggestions() {
     return <span className="iw-trend iw-trend-low"><MdArrowDownward /> Low</span>;
   };
 
-  const deleteItem = (sku) => {
-    setItems((prev) => prev.filter((r) => r.sku !== sku));
+  const handleToggle = async (id) => {
+    try {
+      await reorderSuggestionApi.toggle(id);
+      loadData();
+    } catch { /* ignore */ }
   };
 
-  const filtered = items.filter((r) => r.name.toLowerCase().includes(search.toLowerCase()));
+  const handleDelete = async (id) => {
+    try {
+      await reorderSuggestionApi.delete(id);
+      loadData();
+    } catch { /* ignore */ }
+  };
 
   return (
     <div className="iw-subview">
@@ -306,11 +337,11 @@ function ReorderSuggestions() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((row, i) => (
-              <tr key={i}>
+            {items.map((row) => (
+              <tr key={row._id}>
                 <td>{row.sku}</td>
-                <td>{row.name}</td>
-                <td>{row.velocity}</td>
+                <td>{row.productName}</td>
+                <td>{row.salesVelocity}</td>
                 <td>{row.currentStock}</td>
                 <td>{row.safetyStock}</td>
                 <td>{row.leadTime}</td>
@@ -319,16 +350,19 @@ function ReorderSuggestions() {
                 <td>
                   <div className="iw-actions">
                     <label className="iw-toggle">
-                      <input type="checkbox" defaultChecked />
+                      <input type="checkbox" checked={row.isActive} onChange={() => handleToggle(row._id)} />
                       <span className="iw-toggle-slider" />
                     </label>
-                    <button className="iw-delete-btn" onClick={() => deleteItem(row.sku)}>
+                    <button className="iw-delete-btn" onClick={() => handleDelete(row._id)}>
                       <MdDelete />
                     </button>
                   </div>
                 </td>
               </tr>
             ))}
+            {items.length === 0 && (
+              <tr><td colSpan="9" className="iw-empty">No suggestions found.</td></tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -338,12 +372,50 @@ function ReorderSuggestions() {
 
 function BinRackMapping() {
   const [search, setSearch] = useState('');
+  const [items, setItems] = useState([]);
+  const [stats, setStats] = useState({ totalRacks: 0, totalBins: 0, fragile: 0, tempSensitive: 0 });
+  const [selectedItem, setSelectedItem] = useState(null);
   const [rackNumber, setRackNumber] = useState('');
   const [shelfBin, setShelfBin] = useState('');
   const [zoneArea, setZoneArea] = useState('');
   const [storageType, setStorageType] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const filtered = binRackData.filter((r) => r.name.toLowerCase().includes(search.toLowerCase()));
+  const loadData = () => {
+    const params = {};
+    if (search.trim()) params.search = search.trim();
+    binRackApi.getAll(params)
+      .then((data) => {
+        setItems(data.mappings || []);
+        setStats(data.stats || { totalRacks: 0, totalBins: 0, fragile: 0, tempSensitive: 0 });
+      })
+      .catch(() => { setItems([]); });
+  };
+
+  useEffect(() => { loadData(); }, [search]);
+
+  const handleSelectRow = (row) => {
+    setSelectedItem(row);
+    setRackNumber(row.rackNo);
+    setShelfBin(row.shelfBin);
+    setZoneArea(row.zone);
+    setStorageType(row.storageType);
+  };
+
+  const handleSaveMapping = async () => {
+    if (!selectedItem || !rackNumber || !shelfBin || !zoneArea || !storageType) return;
+    setSaving(true);
+    try {
+      await binRackApi.update(selectedItem._id, {
+        rackNo: rackNumber,
+        shelfBin,
+        zone: zoneArea,
+        storageType,
+      });
+      loadData();
+    } catch { /* ignore */ }
+    setSaving(false);
+  };
 
   return (
     <div className="iw-subview">
@@ -364,19 +436,19 @@ function BinRackMapping() {
       <div className="iw-stats-row">
         <div className="iw-stat-card">
           <span className="iw-stat-label">Total Racks</span>
-          <span className="iw-stat-value">56</span>
+          <span className="iw-stat-value">{stats.totalRacks}</span>
         </div>
         <div className="iw-stat-card">
           <span className="iw-stat-label">Total Bins</span>
-          <span className="iw-stat-value">240</span>
+          <span className="iw-stat-value">{stats.totalBins}</span>
         </div>
         <div className="iw-stat-card">
           <span className="iw-stat-label">Fragile Storage</span>
-          <span className="iw-stat-value">84</span>
+          <span className="iw-stat-value">{stats.fragile}</span>
         </div>
         <div className="iw-stat-card">
           <span className="iw-stat-label">Temperature Sensitive</span>
-          <span className="iw-stat-value">84</span>
+          <span className="iw-stat-value">{stats.tempSensitive}</span>
         </div>
       </div>
 
@@ -396,20 +468,23 @@ function BinRackMapping() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((row, i) => (
-                <tr key={i}>
+              {items.map((row) => (
+                <tr key={row._id} className={selectedItem?._id === row._id ? 'iw-row-active' : ''} onClick={() => handleSelectRow(row)}>
                   <td>{row.sku}</td>
-                  <td>{row.name}</td>
+                  <td>{row.productName}</td>
                   <td>{row.category}</td>
-                  <td>{row.rack}</td>
-                  <td>{row.shelf}</td>
+                  <td>{row.rackNo}</td>
+                  <td>{row.shelfBin}</td>
                   <td>{row.zone}</td>
-                  <td>{row.storage}</td>
+                  <td>{row.storageType}</td>
                   <td>
-                    <button className="iw-check-btn"><MdCheck /></button>
+                    <button className="iw-check-btn" onClick={(e) => { e.stopPropagation(); handleSelectRow(row); }}><MdCheck /></button>
                   </td>
                 </tr>
               ))}
+              {items.length === 0 && (
+                <tr><td colSpan="8" className="iw-empty">No mappings found.</td></tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -419,15 +494,15 @@ function BinRackMapping() {
           <div className="iw-panel-form">
             <div className="iw-form-group">
               <label>Product Name</label>
-              <input type="text" value="4K LED TV" readOnly />
+              <input type="text" value={selectedItem?.productName || ''} readOnly />
             </div>
             <div className="iw-form-group">
               <label>SKU</label>
-              <input type="text" value="SKU12446" readOnly />
+              <input type="text" value={selectedItem?.sku || ''} readOnly />
             </div>
             <div className="iw-form-group">
               <label>Category</label>
-              <input type="text" value="Television" readOnly />
+              <input type="text" value={selectedItem?.category || ''} readOnly />
             </div>
             <div className="iw-form-group">
               <label>Rack Number</label>
@@ -451,7 +526,9 @@ function BinRackMapping() {
                 <option value="Temperature Sensitive">Temperature Sensitive</option>
               </select>
             </div>
-            <button className="iw-btn iw-btn-primary iw-btn-full">Save Mapping</button>
+            <button className="iw-btn iw-btn-primary iw-btn-full" onClick={handleSaveMapping} disabled={saving || !selectedItem}>
+              {saving ? 'Saving...' : 'Save Mapping'}
+            </button>
           </div>
         </div>
       </div>
@@ -461,22 +538,67 @@ function BinRackMapping() {
 
 function DamageShrinkage() {
   const [search, setSearch] = useState('');
-  const [items, setItems] = useState(damageData);
+  const [items, setItems] = useState([]);
   const [selectedReport, setSelectedReport] = useState(null);
   const [reportType, setReportType] = useState('');
   const [reasonCode, setReasonCode] = useState('');
   const [description, setDescription] = useState('');
   const [suggestedAction, setSuggestedAction] = useState('');
 
-  const deleteItem = (reportId) => {
-    setItems((prev) => prev.filter((r) => r.reportId !== reportId));
+  const loadData = () => {
+    const params = {};
+    if (search.trim()) params.search = search.trim();
+    damageReportApi.getAll(params)
+      .then((data) => setItems(data))
+      .catch(() => setItems([]));
   };
 
-  const filtered = items.filter(
-    (r) => r.reportId.toLowerCase().includes(search.toLowerCase()) ||
-           r.reportedBy.toLowerCase().includes(search.toLowerCase()) ||
-           r.sku.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => { loadData(); }, [search]);
+
+  const handleSelectReport = (row) => {
+    setSelectedReport(row);
+    setReportType(row.type);
+    setReasonCode(row.reasonCode || '');
+    setDescription(row.description || '');
+    setSuggestedAction(row.suggestedAction || '');
+  };
+
+  const handleStatusUpdate = async (status) => {
+    if (!selectedReport?._id) return;
+    try {
+      const updateData = { status, type: reportType, reasonCode, description, suggestedAction };
+      await damageReportApi.update(selectedReport._id, updateData);
+      loadData();
+      setSelectedReport(null);
+    } catch { /* ignore */ }
+  };
+
+  const handleToggle = async (row) => {
+    const newStatus = row.status === 'Approved' ? 'Disapproved' : 'Approved';
+    try {
+      await damageReportApi.updateStatus(row._id, newStatus);
+      loadData();
+    } catch { /* ignore */ }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await damageReportApi.delete(id);
+      loadData();
+    } catch { /* ignore */ }
+  };
+
+  const formatDate = (d) => {
+    if (!d) return '';
+    const dt = new Date(d);
+    return dt.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: '2-digit' }) +
+      ' ' + dt.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true });
+  };
+
+  const toInputDate = (d) => {
+    if (!d) return '';
+    return new Date(d).toISOString().split('T')[0];
+  };
 
   return (
     <div className="iw-subview">
@@ -512,16 +634,13 @@ function DamageShrinkage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((row, i) => (
-                <tr key={i} className={selectedReport?.reportId === row.reportId ? 'iw-row-active' : ''} onClick={() => {
-                  setSelectedReport(row);
-                  setReportType(row.type);
-                }}>
+              {items.map((row) => (
+                <tr key={row._id} className={selectedReport?._id === row._id ? 'iw-row-active' : ''} onClick={() => handleSelectReport(row)}>
                   <td>{row.reportId}</td>
-                  <td>{row.reportedOn}</td>
+                  <td>{formatDate(row.reportedOn)}</td>
                   <td>{row.reportedBy}</td>
                   <td>{row.sku}</td>
-                  <td>{row.bin}</td>
+                  <td>{row.binLocation}</td>
                   <td>{row.type}</td>
                   <td>{row.qty}</td>
                   <td>
@@ -532,16 +651,19 @@ function DamageShrinkage() {
                   <td>
                     <div className="iw-actions" onClick={(e) => e.stopPropagation()}>
                       <label className="iw-toggle">
-                        <input type="checkbox" defaultChecked={row.status === 'Approved'} />
+                        <input type="checkbox" checked={row.status === 'Approved'} onChange={() => handleToggle(row)} />
                         <span className="iw-toggle-slider" />
                       </label>
-                      <button className="iw-delete-btn" onClick={() => deleteItem(row.reportId)}>
+                      <button className="iw-delete-btn" onClick={() => handleDelete(row._id)}>
                         <MdDelete />
                       </button>
                     </div>
                   </td>
                 </tr>
               ))}
+              {items.length === 0 && (
+                <tr><td colSpan="9" className="iw-empty">No reports found.</td></tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -551,27 +673,27 @@ function DamageShrinkage() {
           <div className="iw-panel-form">
             <div className="iw-form-group">
               <label>Report ID</label>
-              <input type="text" value={selectedReport?.reportId || 'DR-00012'} readOnly />
+              <input type="text" value={selectedReport?.reportId || ''} readOnly />
             </div>
             <div className="iw-form-group">
               <label>Product Name</label>
-              <input type="text" value={selectedReport ? '4K LED TV' : '4K LED TV'} readOnly />
+              <input type="text" value={selectedReport?.productName || ''} readOnly />
             </div>
             <div className="iw-form-group">
               <label>Reported By</label>
-              <input type="text" value={selectedReport?.reportedBy || 'Ramesh Kumar (WH-02)'} readOnly />
+              <input type="text" value={selectedReport?.reportedBy || ''} readOnly />
             </div>
             <div className="iw-form-group">
               <label>SKU</label>
-              <input type="text" value={selectedReport?.sku || 'SKU2345'} readOnly />
+              <input type="text" value={selectedReport?.sku || ''} readOnly />
             </div>
             <div className="iw-form-group">
               <label>Bin Location</label>
-              <input type="text" value={selectedReport?.bin || 'A1-S2'} readOnly />
+              <input type="text" value={selectedReport?.binLocation || ''} readOnly />
             </div>
             <div className="iw-form-group">
               <label>Type</label>
-              <select value={reportType || 'Damaged'} onChange={(e) => setReportType(e.target.value)}>
+              <select value={reportType || ''} onChange={(e) => setReportType(e.target.value)}>
                 <option value="Damaged">Damaged</option>
                 <option value="Lost">Lost</option>
                 <option value="Theft">Theft</option>
@@ -580,11 +702,11 @@ function DamageShrinkage() {
             </div>
             <div className="iw-form-group">
               <label>Quantity</label>
-              <input type="number" value={selectedReport?.qty || 1} readOnly />
+              <input type="number" value={selectedReport?.qty || ''} readOnly />
             </div>
             <div className="iw-form-group">
               <label>Reported on</label>
-              <input type="date" defaultValue="2025-11-28" />
+              <input type="date" value={toInputDate(selectedReport?.reportedOn)} readOnly />
             </div>
             <div className="iw-form-group">
               <label>Reason Code</label>
@@ -605,8 +727,8 @@ function DamageShrinkage() {
               </select>
             </div>
             <div className="iw-detail-actions">
-              <button className="iw-btn iw-btn-green">Approve</button>
-              <button className="iw-btn iw-btn-red">Disapprove</button>
+              <button className="iw-btn iw-btn-green" disabled={!selectedReport} onClick={() => handleStatusUpdate('Approved')}>Approve</button>
+              <button className="iw-btn iw-btn-red" disabled={!selectedReport} onClick={() => handleStatusUpdate('Disapproved')}>Disapprove</button>
             </div>
           </div>
         </div>

@@ -45,12 +45,162 @@
   border-bottom-color: #1e40af;
 }
 
+/* ===== Summary Stats Cards ===== */
+.deposit-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.deposit-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.deposit-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.deposit-stat-icon-blue {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.deposit-stat-icon-orange {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.deposit-stat-icon-green {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.deposit-stat-icon-red {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.deposit-stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.deposit-stat-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.deposit-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
 /* Sub-header */
 .deposit-sub-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
+}
+
+.deposit-ledger-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.deposit-franchise-select {
+  min-width: 180px;
+}
+
+.deposit-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: #fff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.deposit-filter-btn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+/* Type badges */
+.deposit-type-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.deposit-type-initial-deposit {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.deposit-type-allocation {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.deposit-type-order-purchase {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.deposit-type-refund-processed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* Credit / Debit / Balance coloring */
+.deposit-credit {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.deposit-debit {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.deposit-balance {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+@media (max-width: 900px) {
+  .deposit-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .deposit-sub-title {
@@ -336,4 +486,140 @@
 
 .deposit-save-btn:hover {
   background: #2563eb;
+}
+
+/* ===== Franchise Overview ===== */
+
+/* Back row */
+.deposit-back-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.deposit-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #fff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.deposit-back-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.deposit-franchise-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e40af;
+}
+
+/* Search box */
+.deposit-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.deposit-search-icon {
+  position: absolute;
+  left: 10px;
+  font-size: 18px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.deposit-search-input {
+  padding: 9px 12px 9px 34px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #334155;
+  outline: none;
+  width: 220px;
+  transition: border-color 0.15s;
+  background: #fff;
+}
+
+.deposit-search-input:focus {
+  border-color: #3b82f6;
+}
+
+.deposit-search-input::placeholder {
+  color: #94a3b8;
+}
+
+/* Overview clickable rows */
+.deposit-overview-row {
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.deposit-overview-row:hover td {
+  background: #eff6ff !important;
+}
+
+.deposit-franchise-name {
+  font-weight: 600;
+  color: #1e40af;
+}
+
+/* Tier badges */
+.deposit-tier-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.deposit-tier-a {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.deposit-tier-b {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.deposit-tier-c {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* Status badges */
+.deposit-status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.deposit-status-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.deposit-status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.deposit-status-inactive {
+  background: #fee2e2;
+  color: #991b1b;
 }

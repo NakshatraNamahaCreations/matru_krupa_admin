@@ -21,14 +21,23 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
-    const res = await fetch(`${API_BASE}/staff/login`, {
+  // loginType: "staff" or "hierarchy"
+  const login = async (email, password, loginType = 'staff') => {
+    const endpoint = loginType === 'hierarchy'
+      ? `${API_BASE}/staff/hierarchy-login`
+      : `${API_BASE}/staff/login`;
+
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Login failed');
+
+    // Ensure userType is set
+    if (!data.userType) data.userType = loginType === 'hierarchy' ? 'hierarchy' : 'staff';
+
     localStorage.setItem('mk_admin_token', data.token);
     localStorage.setItem('mk_admin_user', JSON.stringify(data));
     setStaff(data);
