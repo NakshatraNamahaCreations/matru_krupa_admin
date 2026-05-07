@@ -338,6 +338,12 @@ export default function HierarchySetup() {
   const { staff } = useAuth();
   const isSuperOrAdmin = staff?.role === 'admin' || staff?.role === 'super_admin';
   const canSeeDistrictSplit = isSuperOrAdmin || staff?.role === 'District Admin';
+
+  const allowedLevels = isSuperOrAdmin
+    ? LEVEL_OPTIONS
+    : staff?.role === 'District Admin'
+      ? ['Taluk Admin']
+      : ['Promoters'];
   const [activeTab, setActiveTab] = useState('create');
   const [viewDetail, setViewDetail] = useState(null);
 
@@ -348,7 +354,7 @@ export default function HierarchySetup() {
   const [errors, setErrors] = useState({});
 
   // ── Create Admin ──
-  const [adminLevel, setAdminLevel] = useState('Taluk Admin');
+  const [adminLevel, setAdminLevel] = useState(allowedLevels[0]);
   const [formData, setFormData] = useState({ ...emptyForm });
   const [commissionRules, setCommissionRules] = useState([]);
 
@@ -958,7 +964,7 @@ export default function HierarchySetup() {
             <div className="hs-form-group">
               <label className="hs-label">Admin Level</label>
               <select className="hs-select" value={adminLevel} onChange={e => setAdminLevel(e.target.value)}>
-                {LEVEL_OPTIONS.map(l => <option key={l}>{l}</option>)}
+                {allowedLevels.map(l => <option key={l}>{l}</option>)}
               </select>
             </div>
             <div className="hs-form-group">
@@ -1083,7 +1089,7 @@ export default function HierarchySetup() {
               <label className="hs-label">Select Level</label>
               <select className="hs-select" style={{ minWidth: 120 }} value={levelFilter} onChange={e => setLevelFilter(e.target.value)}>
                 <option>All</option>
-                {LEVEL_OPTIONS.map(l => <option key={l}>{l}</option>)}
+                {allowedLevels.map(l => <option key={l}>{l}</option>)}
               </select>
             </div>
             <div className="hs-form-group" style={{ marginBottom: 0 }}>
