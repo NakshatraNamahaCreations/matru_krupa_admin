@@ -64,9 +64,9 @@ const formData = {
 };
 
 const overviewData = [
-  { sl: 1, level: 'State Admin', name: 'Suresh', code: 'KA-SA-001', district: 'Mysuru', held: '20,000', aadhar: true, pan: true, bank: false, status: 'Pending' },
-  { sl: 2, level: 'Assistant District Admin', name: 'Ravi', code: 'KA-ADA-002', district: 'Mysuru', held: '16,000', aadhar: true, pan: true, bank: false, status: 'Pending' },
-  { sl: 3, level: 'District Admin', name: 'Mahesh', code: 'KA-DA-003', district: 'Mysuru', held: '24,000', aadhar: true, pan: true, bank: false, status: 'Pending' },
+  // { sl: 1, level: 'State Admin', name: 'Suresh', code: 'KA-SA-001', district: 'Mysuru', held: '20,000', aadhar: true, pan: true, bank: false, status: 'Pending' },
+  // { sl: 2, level: 'Assistant District Admin', name: 'Ravi', code: 'KA-ADA-002', district: 'Mysuru', held: '16,000', aadhar: true, pan: true, bank: false, status: 'Pending' },
+  { sl: 1, level: 'District Admin', name: 'Mahesh', code: 'KA-DA-003', district: 'Mysuru', held: '24,000', aadhar: true, pan: true, bank: false, status: 'Pending' },
   { sl: 4, level: 'District Admin', name: 'Ankit', code: 'KA-DA-004', district: 'Mysuru', held: '20,000', aadhar: true, pan: true, bank: true, status: 'Pending' },
   { sl: 5, level: 'Taluk Admin', name: 'Manish', code: 'KA-TA-009', district: 'Mysuru/ Hunsur Town', held: '19,000', aadhar: true, pan: true, bank: false, status: 'Pending' },
   { sl: 6, level: 'Promoter', name: 'Ankit', code: 'KA-PA-006', district: 'Mysuru/ Nanjungud', held: '20,000', aadhar: true, pan: true, bank: false, status: 'Pending' },
@@ -96,7 +96,7 @@ export default function KycVerification() {
           <div className="kyc-filter-bar">
             <div className="kyc-filter-group">
               <label className="kyc-filter-label">Level</label>
-              <select className="kyc-select"><option>All</option><option>State Admin</option><option>District Admin</option><option>Taluk Admin</option><option>Promoter</option></select>
+              <select className="kyc-select"><option>All</option>{/* <option>State Admin</option> */}<option>District Admin</option><option>Taluk Admin</option><option>Promoter</option></select>
             </div>
             <div className="kyc-filter-group">
               <label className="kyc-filter-label">Select Date</label>

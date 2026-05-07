@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { MdArrowBack, MdVisibility, MdEdit, MdDelete, MdPerson, MdWarning, MdClose } from 'react-icons/md';
+import { MdArrowBack, MdVisibility, MdEdit, MdDelete, MdPerson, MdWarning, MdClose, MdAdd } from 'react-icons/md';
 import {
   hierarchyAdminApi,
   shopApi,
@@ -336,7 +336,8 @@ const emptyShopForm = {
 
 export default function HierarchySetup() {
   const { staff } = useAuth();
-  const canSeeDistrictSplit = staff?.role === 'admin' || staff?.role === 'super_admin';
+  const isSuperOrAdmin = staff?.role === 'admin' || staff?.role === 'super_admin';
+  const canSeeDistrictSplit = isSuperOrAdmin || staff?.role === 'District Admin';
   const [activeTab, setActiveTab] = useState('create');
   const [viewDetail, setViewDetail] = useState(null);
 
@@ -376,6 +377,11 @@ export default function HierarchySetup() {
   const [dbDistricts, setDbDistricts] = useState([]);
   const [dbTaluks, setDbTaluks] = useState([]);
   const [dbHoblis, setDbHoblis] = useState([]);
+
+  // ── Manage Taluks ──
+  const [talukMgmtDistrict, setTalukMgmtDistrict] = useState('');
+  const [newTalukName, setNewTalukName] = useState('');
+  const [talukSubmitting, setTalukSubmitting] = useState(false);
 
   // Merge DB data with fallback hardcoded lists. DB wins when present.
   const KARNATAKA_DISTRICTS = useMemo(() => {
@@ -691,17 +697,52 @@ export default function HierarchySetup() {
     setSplits(updated);
   };
 
+  // ── TALUK MANAGEMENT HANDLERS ──
+
+  const handleAddTaluk = async () => {
+    if (!talukMgmtDistrict) { showToast('Select a district first', 'error'); return; }
+    if (!newTalukName.trim()) { showToast('Enter taluk name', 'error'); return; }
+    try {
+      setTalukSubmitting(true);
+      await talukApi.create({ name: newTalukName.trim(), district: talukMgmtDistrict });
+      showToast('Taluk added successfully!');
+      setNewTalukName('');
+      fetchLocations();
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setTalukSubmitting(false);
+    }
+  };
+
+  const handleDeleteTaluk = async (id) => {
+    try {
+      await talukApi.delete(id);
+      showToast('Taluk deleted');
+      fetchLocations();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  };
+
+  const filteredMgmtTaluks = useMemo(() => {
+    if (!talukMgmtDistrict) return dbTaluks;
+    return dbTaluks.filter(t => t.district === talukMgmtDistrict);
+  }, [dbTaluks, talukMgmtDistrict]);
+
   const tabs = [
     { key: 'create', label: 'Create Admin' },
     { key: 'overview', label: 'Overview' },
     ...(canSeeDistrictSplit ? [{ key: 'split', label: 'District Admin split %' }] : []),
     { key: 'shop', label: 'Shop Registration' },
+    ...(isSuperOrAdmin ? [{ key: 'taluks', label: 'Manage Taluks' }] : []),
   ];
 
   // Guard: if a non-admin user lands on the hidden 'split' tab (e.g. via stale state), redirect.
   useEffect(() => {
     if (!canSeeDistrictSplit && activeTab === 'split') setActiveTab('overview');
-  }, [canSeeDistrictSplit, activeTab]);
+    if (!isSuperOrAdmin && activeTab === 'taluks') setActiveTab('overview');
+  }, [canSeeDistrictSplit, activeTab, isSuperOrAdmin]);
 
   // ── Detail View ──
   if (viewDetail) {
@@ -1409,6 +1450,101 @@ export default function HierarchySetup() {
                 </table>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* === MANAGE TALUKS TAB === */}
+      {activeTab === 'taluks' && (
+        <div className="hs-two-col">
+          <div className="hs-card">
+            <div className="hs-card-title">ADD NEW TALUK</div>
+            <div className="hs-form-group">
+              <label className="hs-label">Select District *</label>
+              <select
+                className="hs-select"
+                value={talukMgmtDistrict}
+                onChange={e => setTalukMgmtDistrict(e.target.value)}
+              >
+                <option value="">Select District</option>
+                {KARNATAKA_DISTRICTS.map(d => <option key={d}>{d}</option>)}
+              </select>
+            </div>
+            <div className="hs-form-group">
+              <label className="hs-label">Taluk Name *</label>
+              <input
+                className="hs-input"
+                placeholder="Enter taluk name"
+                value={newTalukName}
+                onChange={e => setNewTalukName(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleAddTaluk(); }}
+              />
+            </div>
+            <button
+              className="hs-btn hs-btn-primary"
+              style={{ marginTop: 8 }}
+              onClick={handleAddTaluk}
+              disabled={talukSubmitting || !talukMgmtDistrict || !newTalukName.trim()}
+            >
+              <MdAdd style={{ marginRight: 4, fontSize: 18, verticalAlign: 'middle' }} />
+              {talukSubmitting ? 'Adding...' : 'Add Taluk'}
+            </button>
+          </div>
+
+          <div className="hs-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div className="hs-card-title" style={{ marginBottom: 0 }}>
+                TALUKS {talukMgmtDistrict ? `IN ${talukMgmtDistrict.toUpperCase()}` : '(ALL DISTRICTS)'}
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 500, color: '#64748b' }}>
+                {filteredMgmtTaluks.length} taluk{filteredMgmtTaluks.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+
+            {filteredMgmtTaluks.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: 40, color: '#94a3b8', fontSize: 13 }}>
+                {talukMgmtDistrict
+                  ? `No taluks added for ${talukMgmtDistrict} yet. Use the form to add one.`
+                  : 'Select a district to view its taluks, or add a new one.'}
+              </div>
+            ) : (
+              <div className="hs-table-card" style={{ boxShadow: 'none', border: 'none' }}>
+                <table className="hs-table">
+                  <thead>
+                    <tr>
+                      <th>Sl.</th>
+                      <th>Taluk Name</th>
+                      <th>District</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredMgmtTaluks.map((t, i) => (
+                      <tr key={t._id}>
+                        <td>{i + 1}</td>
+                        <td style={{ fontWeight: 600 }}>{t.name}</td>
+                        <td>{t.district}</td>
+                        <td>
+                          <span className={t.isActive !== false ? 'hs-active-badge' : 'hs-inactive-badge'}>
+                            {t.isActive !== false ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td>
+                          <button
+                            className="hs-action-btn delete"
+                            onClick={() => handleDeleteTaluk(t._id)}
+                            title="Delete"
+                          >
+                            <MdDelete />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}
