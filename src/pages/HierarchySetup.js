@@ -324,7 +324,7 @@ const FALLBACK_HOBLIS_BY_TALUK = {
 };
 
 const emptyForm = {
-  fullName: '', dob: '', district: '', talukName: '',
+  fullName: '', dob: '', district: '', talukName: '', parentAdmin: '',
   mobile: '', email: '', aadhar: '', pan: '',
   bankName: '', accountNumber: '', accountHolder: '', ifsc: '', accountType: 'Savings',
 };
@@ -544,16 +544,31 @@ export default function HierarchySetup() {
     }
   }, []);
 
+  // Standalone loader for the taluk admins list — used by the Create Admin
+  // form's "Reporting Taluk Admin" dropdown on the create tab, where
+  // fetchShops doesn't run.
+  const fetchTalukAdmins = useCallback(async () => {
+    try {
+      const data = await hierarchyAdminApi.getAll({ level: 'Taluk Admin' });
+      setTalukAdmins(Array.isArray(data) ? data : []);
+    } catch {
+      // silent — dropdown will just be empty if this fails
+    }
+  }, []);
+
   useEffect(() => {
     fetchLocations();
   }, [fetchLocations]);
 
   useEffect(() => {
     if (activeTab === 'overview') fetchAdmins();
-    if (activeTab === 'create') fetchRules();
+    if (activeTab === 'create') {
+      fetchRules();
+      fetchTalukAdmins();
+    }
     if (activeTab === 'split') fetchSplits();
     if (activeTab === 'shop') fetchShops();
-  }, [activeTab, fetchAdmins, fetchRules, fetchSplits, fetchShops]);
+  }, [activeTab, fetchAdmins, fetchRules, fetchSplits, fetchShops, fetchTalukAdmins]);
 
   // ── VALIDATION ──
 
@@ -566,6 +581,7 @@ export default function HierarchySetup() {
     else if (!/\S+@\S+\.\S+/.test(formData.email)) e.email = 'Invalid email';
     if (!formData.district) e.district = 'District is required';
     if (adminLevel === 'Taluk Admin' && !formData.talukName.trim()) e.talukName = 'Taluk name is required';
+    if (adminLevel === 'Promoters' && !formData.parentAdmin) e.parentAdmin = 'Reporting Taluk Admin is required';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -586,7 +602,9 @@ export default function HierarchySetup() {
     if (!validateAdmin()) return;
     try {
       setSubmitting(true);
-      await hierarchyAdminApi.create({ ...formData, level: adminLevel });
+      const payload = { ...formData, level: adminLevel };
+      if (!payload.parentAdmin) delete payload.parentAdmin;
+      await hierarchyAdminApi.create(payload);
       showToast('Admin created successfully!');
       setFormData({ ...emptyForm });
       setErrors({});
@@ -979,7 +997,7 @@ export default function HierarchySetup() {
               </div>
               <div className="hs-form-group">
                 <label className="hs-label">{adminLevel === 'Taluk Admin' ? 'District(Parent) *' : 'District *'}</label>
-                <select className="hs-select" value={formData.district} onChange={e => setFormData({...formData, district: e.target.value, talukName: ''})}>
+                <select className="hs-select" value={formData.district} onChange={e => setFormData({...formData, district: e.target.value, talukName: '', parentAdmin: ''})}>
                   <option value="">Select District</option>
                   {KARNATAKA_DISTRICTS.map(d => <option key={d}>{d}</option>)}
                 </select>
@@ -999,6 +1017,49 @@ export default function HierarchySetup() {
                   {(TALUKS_BY_DISTRICT[formData.district] || []).map(t => <option key={t}>{t}</option>)}
                 </select>
                 {errors.talukName && <span style={{ color: '#ef4444', fontSize: 11 }}>{errors.talukName}</span>}
+              </div>
+            )}
+            {adminLevel === 'Promoters' && (
+              <div className="hs-form-group">
+                <label className="hs-label">Reporting Taluk Admin *</label>
+                <select
+                  className="hs-select"
+                  value={formData.parentAdmin}
+                  onChange={e => {
+                    const id = e.target.value;
+                    const ta = talukAdmins.find(a => a._id === id);
+                    setFormData({
+                      ...formData,
+                      parentAdmin: id,
+                      talukName: ta?.talukName || '',
+                    });
+                  }}
+                  disabled={!formData.district}
+                >
+                  {(() => {
+                    const matches = talukAdmins.filter(
+                      a => !formData.district || a.district === formData.district,
+                    );
+                    return (
+                      <>
+                        <option value="">
+                          {!formData.district
+                            ? 'Select District first'
+                            : matches.length === 0
+                              ? 'No taluk admins in this district'
+                              : 'Select Taluk Admin'}
+                        </option>
+                        {matches.map(a => (
+                          <option key={a._id} value={a._id}>
+                            {a.fullName} — {a.adminId}
+                            {a.talukName ? ` · ${a.talukName}` : ''}
+                          </option>
+                        ))}
+                      </>
+                    );
+                  })()}
+                </select>
+                {errors.parentAdmin && <span style={{ color: '#ef4444', fontSize: 11 }}>{errors.parentAdmin}</span>}
               </div>
             )}
             <div className="hs-row">

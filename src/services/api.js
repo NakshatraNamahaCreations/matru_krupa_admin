@@ -139,6 +139,44 @@ export const dashboardApi = {
   getOrdersChart: () => request("/dashboard/orders-chart"),
 };
 
+// ─── Franchise Applications (website submissions) ─────
+export const franchiseApplicationApi = {
+  getAll: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/franchise-applications${query ? `?${query}` : ""}`);
+  },
+  getById: (id) => request(`/franchise-applications/${id}`),
+  update: (id, data) =>
+    request(`/franchise-applications/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+  delete: (id) => request(`/franchise-applications/${id}`, { method: "DELETE" }),
+};
+
+// ─── Onboarded Franchises ─────────────────────────────
+export const franchiseApi = {
+  getAll: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/franchises${query ? `?${query}` : ""}`);
+  },
+  getById: (id) => request(`/franchises/${id}`),
+  create: (data) =>
+    request("/franchises", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (id, data) =>
+    request(`/franchises/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  toggle: (id) => request(`/franchises/${id}/toggle`, { method: "PATCH" }),
+  delete: (id) => request(`/franchises/${id}`, { method: "DELETE" }),
+  onboardFromApplication: (appId) =>
+    request(`/franchises/from-application/${appId}`, { method: "POST" }),
+};
+
 // ─── Customers (Users) ─────────────────────────────────
 export const customerApi = {
   getAll: (params = {}) => {
