@@ -60,6 +60,8 @@ export default function FranchiseModule() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedApp, setSelectedApp] = useState(null);
   const [savingApp, setSavingApp] = useState(false);
+  const [selectedFranchise, setSelectedFranchise] = useState(null);
+  const [togglingFranchiseId, setTogglingFranchiseId] = useState(null);
 
   const loadApplications = useCallback(async () => {
     setAppsLoading(true);
@@ -98,6 +100,25 @@ export default function FranchiseModule() {
   useEffect(() => {
     loadFranchises();
   }, [loadFranchises]);
+
+  const handleToggleFranchise = async (franchise) => {
+    const action = franchise.isActive ? 'Deactivate' : 'Activate';
+    if (!window.confirm(`${action} ${franchise.franchiseName}?`)) return;
+    setTogglingFranchiseId(franchise._id);
+    try {
+      const updated = await franchiseApi.toggle(franchise._id);
+      setFranchises((prev) =>
+        prev.map((f) => (f._id === franchise._id ? updated : f)),
+      );
+      if (selectedFranchise && selectedFranchise._id === franchise._id) {
+        setSelectedFranchise(updated);
+      }
+    } catch (err) {
+      alert(err.message || 'Failed to update franchise status');
+    } finally {
+      setTogglingFranchiseId(null);
+    }
+  };
 
   const handleUpdateAppStatus = async (id, status) => {
     setSavingApp(true);
@@ -589,9 +610,21 @@ export default function FranchiseModule() {
                   </tr>
                 )}
                 {!franchisesLoading && filtered.map((item) => (
-                  <tr key={item._id}>
+                  <tr
+                    key={item._id}
+                    className={
+                      item.isActive === false ? 'franchise-row--inactive' : ''
+                    }
+                  >
                     <td>{item.franchiseId}</td>
-                    <td>{item.franchiseName}</td>
+                    <td>
+                      {item.franchiseName}
+                      {item.isActive === false && (
+                        <span className="franchise-status franchise-status--rejected" style={{ marginLeft: 8 }}>
+                          Inactive
+                        </span>
+                      )}
+                    </td>
                     <td>{item.owner}</td>
                     <td>{item.email}</td>
                     <td>{item.mobile}</td>
@@ -599,7 +632,11 @@ export default function FranchiseModule() {
                     <td>{item.stateRegion}</td>
                     <td>
                       <div className="franchise-actions">
-                        <button className="franchise-action-btn franchise-view-btn" title="View">
+                        <button
+                          className="franchise-action-btn franchise-view-btn"
+                          title="View"
+                          onClick={() => setSelectedFranchise(item)}
+                        >
                           <MdVisibility />
                         </button>
                         <button
@@ -609,7 +646,12 @@ export default function FranchiseModule() {
                         >
                           <MdEdit />
                         </button>
-                        <button className="franchise-action-btn franchise-deactivate-btn" title="Deactivate">
+                        <button
+                          className="franchise-action-btn franchise-deactivate-btn"
+                          title={item.isActive ? 'Deactivate' : 'Activate'}
+                          disabled={togglingFranchiseId === item._id}
+                          onClick={() => handleToggleFranchise(item)}
+                        >
                           <MdBlock />
                         </button>
                       </div>
@@ -811,6 +853,134 @@ export default function FranchiseModule() {
                 <DetailRow
                   label="Accepted Terms"
                   value={selectedApp.acceptTerms ? 'Yes' : 'No'}
+                />
+              </DetailSection>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Franchise Detail Modal */}
+      {selectedFranchise && (
+        <div
+          className="franchise-modal-overlay"
+          onClick={() => setSelectedFranchise(null)}
+        >
+          <div
+            className="franchise-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="franchise-modal-head">
+              <div>
+                <h2 className="franchise-modal-title">
+                  {selectedFranchise.franchiseName}
+                </h2>
+                <p className="franchise-modal-sub">
+                  {selectedFranchise.franchiseId}
+                  {selectedFranchise.stateRegion
+                    ? ` · ${selectedFranchise.stateRegion}`
+                    : ''}
+                </p>
+              </div>
+              <button
+                className="franchise-modal-close"
+                onClick={() => setSelectedFranchise(null)}
+                aria-label="Close"
+              >
+                <MdClose />
+              </button>
+            </div>
+
+            <div className="franchise-modal-status-row">
+              <span
+                className={`franchise-status franchise-status--${
+                  selectedFranchise.isActive ? 'approved' : 'rejected'
+                }`}
+              >
+                {selectedFranchise.isActive ? 'Active' : 'Inactive'}
+              </span>
+              <button
+                className="franchise-add-btn"
+                style={{ marginLeft: 'auto' }}
+                disabled={togglingFranchiseId === selectedFranchise._id}
+                onClick={() => handleToggleFranchise(selectedFranchise)}
+              >
+                <MdBlock className="franchise-add-icon" />
+                {selectedFranchise.isActive ? 'Deactivate' : 'Activate'}
+              </button>
+            </div>
+
+            <div className="franchise-modal-body">
+              <DetailSection title="Basic Info">
+                <DetailRow label="Owner" value={selectedFranchise.owner} />
+                <DetailRow label="Email" value={selectedFranchise.email} />
+                <DetailRow label="Mobile" value={selectedFranchise.mobile} />
+                <DetailRow
+                  label="GST Number"
+                  value={selectedFranchise.gstNumber || '—'}
+                />
+                <DetailRow
+                  label="Address"
+                  value={selectedFranchise.address || '—'}
+                />
+                <DetailRow
+                  label="State / Region"
+                  value={selectedFranchise.stateRegion || '—'}
+                />
+              </DetailSection>
+
+              <DetailSection title="Banking Details">
+                <DetailRow
+                  label="Account Holder"
+                  value={selectedFranchise.accountHolderName || '—'}
+                />
+                <DetailRow
+                  label="Bank Name"
+                  value={selectedFranchise.bankName || '—'}
+                />
+                <DetailRow
+                  label="Branch"
+                  value={selectedFranchise.branch || '—'}
+                />
+                <DetailRow
+                  label="Account Number"
+                  value={selectedFranchise.accountNumber || '—'}
+                />
+                <DetailRow
+                  label="IFSC Code"
+                  value={selectedFranchise.ifscCode || '—'}
+                />
+                <DetailRow
+                  label="Account Type"
+                  value={selectedFranchise.accountType || '—'}
+                />
+              </DetailSection>
+
+              {selectedFranchise.sourceApplication && (
+                <DetailSection title="Source">
+                  <DetailRow
+                    label="Onboarded From"
+                    value="Website Application"
+                  />
+                </DetailSection>
+              )}
+
+              <DetailSection title="Meta">
+                <DetailRow
+                  label="Created"
+                  value={
+                    selectedFranchise.createdAt
+                      ? new Date(selectedFranchise.createdAt).toLocaleString()
+                      : '—'
+                  }
+                />
+                <DetailRow
+                  label="Last Updated"
+                  value={
+                    selectedFranchise.updatedAt
+                      ? new Date(selectedFranchise.updatedAt).toLocaleString()
+                      : '—'
+                  }
                 />
               </DetailSection>
             </div>

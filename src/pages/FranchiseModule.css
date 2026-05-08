@@ -209,6 +209,27 @@
   color: #dc2626;
 }
 
+/* Inactive franchise row */
+.franchise-row--inactive td {
+  color: #94a3b8;
+  background: #f8fafc;
+}
+.franchise-row--inactive td:first-child {
+  border-left: 3px solid #ef4444;
+}
+.franchise-row--inactive .franchise-edit-btn,
+.franchise-row--inactive .franchise-view-btn {
+  opacity: 0.6;
+}
+.franchise-row--inactive .franchise-deactivate-btn {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.franchise-row--inactive .franchise-deactivate-btn:hover {
+  background: #bbf7d0;
+  color: #15803d;
+}
+
 /* Empty state */
 .franchise-empty {
   text-align: center;
