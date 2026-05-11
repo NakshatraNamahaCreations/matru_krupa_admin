@@ -1,29 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './Withdrawal.css';
+import { withdrawalRequestApi } from '../services/api';
 
-const pendingRequests = [
-  {
-    name: 'Ramesh', initial: 'R', color: '#ef4444', role: 'Taluk Admin', kyc: 'KYC Verified',
-    location: 'Hunsur Taluk - KA-TA-003 - Mysuru District',
-    requestDate: 'Requested on 25 Mar', bank: 'Bank: SBI A/C ending 8849',
-    wallet: '16,000', gross: '16,000', deduction: '-\u20B91,500', net: '14,500',
-    note1: 'Commission from 16 hoblis in March 2026', note2: 'KYC Verified 18 Mar 2026',
-  },
-  {
-    name: 'Manish', initial: 'M', color: '#3b82f6', role: 'Taluk Admin', kyc: 'KYC Pending',
-    location: 'Mysuru District - KA-DA-001',
-    requestDate: 'Requested on 23 Mar', bank: 'Bank: HDFC A/C ending 2282',
-    wallet: '12,000', gross: '12,000', deduction: '-\u20B91,000', net: '11,000',
-    note1: '30% of Mysuru District \u20B91,000 per sale \u2022 40 sales in March 2026', note2: '',
-  },
-  {
-    name: 'Punarv', initial: 'P', color: '#8b5cf6', role: 'Promoter', kyc: 'KYC Verified',
-    location: 'Hunsur Taluk - KA-PA-001 -',
-    requestDate: 'Requested on 19 Mar', bank: 'Bank: SBI A/C ending 1929',
-    wallet: '24,000', gross: '24,000', deduction: '-\u20B92,000', net: '22,000',
-    note1: '12 sales x \u20B92,000', note2: 'KYC Verified 09 Mar 2026',
-  },
-];
+const fmt = (n) => Number(n || 0).toLocaleString('en-IN');
+const colorFor = (name) => {
+  const palette = ['#ef4444', '#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899'];
+  let h = 0;
+  for (let i = 0; i < (name || '').length; i += 1) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return palette[h % palette.length];
+};
 
 const referenceTable = [
   { gross: '1,000', tds: '50', service: '50', net: '900' },
@@ -36,15 +21,59 @@ const referenceTable = [
   { gross: '50,000', tds: '2,500', service: '2,500', net: '45,000' },
 ];
 
-const processedHistory = [
-  { date: '12 Mar 2026', name: 'Ravi', code: 'KA-PA-001', role: 'Promoter', district: 'Mysuru', gross: '8,000', tds: '400', service: '400', net: '7,200', utr: 'NEFT20384704' },
-  { date: '11 Mar 2026', name: 'Suresh', code: 'KA-TA-003', role: 'Taluk Admin', district: 'Mysuru', gross: '12,000', tds: '600', service: '600', net: '10,800', utr: 'NEFT3839037' },
-  { date: '10 Mar 2026', name: 'Abhay', code: 'KA-DA-001', role: 'District Admin', district: 'Mysuru', gross: '20,000', tds: '1,000', service: '1,000', net: '18,000', utr: 'NEFT0936839' },
-];
-
 export default function Withdrawal() {
   const [activeTab, setActiveTab] = useState('pending');
   const [calcForm, setCalcForm] = useState({ name: 'Puran', level: 'Promoter', balance: '24,000', amount: '24,000' });
+  const [pending, setPending] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [acting, setActing] = useState(null);
+
+  const loadRequests = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await withdrawalRequestApi.getAll();
+      const list = Array.isArray(data) ? data : [];
+      setPending(list.filter((r) => r.status === 'pending'));
+      setHistory(list.filter((r) => r.status === 'paid' || r.status === 'rejected' || r.status === 'approved'));
+    } catch (err) {
+      setError(err.message || 'Failed to load requests');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadRequests();
+  }, []);
+
+  const updateRequest = async (id, body) => {
+    setActing(id);
+    try {
+      await withdrawalRequestApi.update(id, body);
+      await loadRequests();
+    } catch (err) {
+      alert(err.message || 'Failed to update');
+    } finally {
+      setActing(null);
+    }
+  };
+
+  const approveRequest = (id) => updateRequest(id, { status: 'approved' });
+  const rejectRequest = (id) => {
+    if (!window.confirm('Reject this withdrawal request?')) return;
+    updateRequest(id, { status: 'rejected' });
+  };
+  const markPaid = (id) => {
+    const utr = window.prompt('Enter UTR / reference number for this payment:');
+    if (!utr) return;
+    updateRequest(id, { status: 'paid', utr });
+  };
+
+  const totalGross = pending.reduce((s, r) => s + (r.amount || 0), 0);
+  const totalNet = pending.reduce((s, r) => s + Math.round((r.amount || 0) * 0.9), 0);
 
   const tabs = [
     { key: 'pending', label: 'Pending Requests' },
@@ -75,62 +104,131 @@ export default function Withdrawal() {
           <div className="wd-stats">
             <div className="wd-stat-card">
               <div className="wd-stat-label">PENDING REQUESTS</div>
-              <div className="wd-stat-value" style={{ color: '#ea580c' }}>3</div>
+              <div className="wd-stat-value" style={{ color: '#ea580c' }}>{pending.length}</div>
               <div className="wd-stat-sub">Awaiting Super Admin Approval</div>
             </div>
             <div className="wd-stat-card">
               <div className="wd-stat-label">TOTAL GROSS REQUESTED</div>
-              <div className="wd-stat-value" style={{ color: '#3b82f6' }}>{'\u20B9'}47,000</div>
+              <div className="wd-stat-value" style={{ color: '#3b82f6' }}>{'\u20B9'}{fmt(totalGross)}</div>
               <div className="wd-stat-sub">Before 10% deductions</div>
             </div>
             <div className="wd-stat-card">
               <div className="wd-stat-label">NET AFTER DEDUCTIONS</div>
-              <div className="wd-stat-value">{'\u20B9'}42,000</div>
+              <div className="wd-stat-value">{'\u20B9'}{fmt(totalNet)}</div>
               <div className="wd-stat-sub">Actual Transfer Amount</div>
             </div>
           </div>
 
-          {pendingRequests.map((req, i) => (
-            <div className="wd-request-card" key={i}>
-              <div className="wd-req-header">
-                <div className="wd-req-avatar" style={{ background: req.color }}>{req.initial}</div>
-                <span className="wd-req-name">{req.name}</span>
-                <div className="wd-req-badges">
-                  <span className="wd-req-badge role">{req.role}</span>
-                  <span className={`wd-req-badge ${req.kyc === 'KYC Verified' ? 'kyc-verified' : 'kyc-pending'}`}>{req.kyc}</span>
-                </div>
-              </div>
-              <div className="wd-req-meta">{req.location}</div>
-              <div className="wd-req-meta">{req.requestDate} &bull; {req.bank}</div>
-
-              <div className="wd-req-breakdown">
-                <div className="wd-req-box neutral">
-                  <div className="wd-req-box-label">Wallet Balance</div>
-                  <div className="wd-req-box-value">{'\u20B9'}{req.wallet}</div>
-                </div>
-                <div className="wd-req-box dark">
-                  <div className="wd-req-box-label">Gross Amount</div>
-                  <div className="wd-req-box-value">{'\u20B9'}{req.gross}</div>
-                </div>
-                <div className="wd-req-box danger">
-                  <div className="wd-req-box-label">TDS 5% + Service 5%</div>
-                  <div className="wd-req-box-value">{req.deduction}</div>
-                </div>
-                <div className="wd-req-box success">
-                  <div className="wd-req-box-label">Net Payable</div>
-                  <div className="wd-req-box-value">{'\u20B9'}{req.net}</div>
-                </div>
-              </div>
-
-              {req.note1 && <div className="wd-req-note">{req.note1}</div>}
-              {req.note2 && <div className="wd-req-note">{req.note2}</div>}
-
-              <div className="wd-req-footer">
-                <button className="wd-btn wd-btn-outline">Reject</button>
-                <button className="wd-btn wd-btn-primary">Approve & Invoice</button>
-              </div>
+          {error && <div style={{ color: '#dc2626', marginBottom: 12 }}>{error}</div>}
+          {loading && (
+            <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>
+              Loading requests\u2026
             </div>
-          ))}
+          )}
+          {!loading && pending.length === 0 && (
+            <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>
+              No pending withdrawal requests.
+            </div>
+          )}
+
+          {!loading && pending.map((req) => {
+            const gross = req.amount || 0;
+            const tdsCut = Math.round(gross * 0.05);
+            const serviceCut = Math.round(gross * 0.05);
+            const net = gross - tdsCut - serviceCut;
+            const initial = (req.fullName || '?').charAt(0).toUpperCase();
+            const bank = req.bankName
+              ? `Bank: ${req.bankName} A/C ending ${(req.accountNumber || '').slice(-4)}`
+              : 'Bank: \u2014';
+            const location = [
+              req.talukName ? `${req.talukName} Taluk` : '',
+              req.adminId,
+              req.district ? `${req.district} District` : '',
+            ]
+              .filter(Boolean)
+              .join(' \u00B7 ');
+            const requested = req.createdAt
+              ? `Requested on ${new Date(req.createdAt).toLocaleDateString('en-IN', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                })}`
+              : '';
+            const isActing = acting === req._id;
+            return (
+              <div className="wd-request-card" key={req._id}>
+                <div className="wd-req-header">
+                  <div
+                    className="wd-req-avatar"
+                    style={{ background: colorFor(req.fullName) }}
+                  >
+                    {initial}
+                  </div>
+                  <span className="wd-req-name">{req.fullName}</span>
+                  <div className="wd-req-badges">
+                    <span className="wd-req-badge role">{req.level}</span>
+                  </div>
+                </div>
+                <div className="wd-req-meta">{location}</div>
+                <div className="wd-req-meta">
+                  {requested} {requested && bank ? '\u2022 ' : ''} {bank}
+                </div>
+
+                <div className="wd-req-breakdown">
+                  <div className="wd-req-box neutral">
+                    <div className="wd-req-box-label">Wallet Balance</div>
+                    <div className="wd-req-box-value">
+                      {'\u20B9'}{fmt(req.walletBalance)}
+                    </div>
+                  </div>
+                  <div className="wd-req-box dark">
+                    <div className="wd-req-box-label">Gross Amount</div>
+                    <div className="wd-req-box-value">
+                      {'\u20B9'}{fmt(gross)}
+                    </div>
+                  </div>
+                  <div className="wd-req-box danger">
+                    <div className="wd-req-box-label">TDS 5% + Service 5%</div>
+                    <div className="wd-req-box-value">
+                      -{'\u20B9'}{fmt(tdsCut + serviceCut)}
+                    </div>
+                  </div>
+                  <div className="wd-req-box success">
+                    <div className="wd-req-box-label">Net Payable</div>
+                    <div className="wd-req-box-value">
+                      {'\u20B9'}{fmt(net)}
+                    </div>
+                  </div>
+                </div>
+
+                {req.note && <div className="wd-req-note">{req.note}</div>}
+
+                <div className="wd-req-footer">
+                  <button
+                    className="wd-btn wd-btn-outline"
+                    onClick={() => rejectRequest(req._id)}
+                    disabled={isActing}
+                  >
+                    Reject
+                  </button>
+                  <button
+                    className="wd-btn wd-btn-outline"
+                    onClick={() => approveRequest(req._id)}
+                    disabled={isActing}
+                  >
+                    Approve
+                  </button>
+                  <button
+                    className="wd-btn wd-btn-primary"
+                    onClick={() => markPaid(req._id)}
+                    disabled={isActing}
+                  >
+                    Mark Paid
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </>
       )}
 
@@ -263,22 +361,52 @@ export default function Withdrawal() {
                 </tr>
               </thead>
               <tbody>
-                {processedHistory.map((h, i) => (
-                  <tr key={i}>
-                    <td>{h.date}</td>
-                    <td>
-                      <span style={{ fontWeight: 600, display: 'block' }}>{h.name}</span>
-                      <span style={{ fontSize: 11, color: '#94a3b8' }}>{h.code}</span>
+                {history.length === 0 && (
+                  <tr>
+                    <td colSpan="9" style={{ textAlign: 'center', padding: 24, color: '#94a3b8' }}>
+                      No processed requests yet.
                     </td>
-                    <td>{h.role}</td>
-                    <td>{h.district}</td>
-                    <td>{'\u20B9'}{h.gross}</td>
-                    <td style={{ color: '#ef4444' }}>{'\u20B9'}{h.tds}</td>
-                    <td style={{ color: '#ef4444' }}>{'\u20B9'}{h.service}</td>
-                    <td style={{ fontWeight: 600 }}>{'\u20B9'}{h.net}</td>
-                    <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{h.utr}</td>
                   </tr>
-                ))}
+                )}
+                {history.map((h) => {
+                  const gross = h.amount || 0;
+                  const tdsCut = Math.round(gross * 0.05);
+                  const serviceCut = Math.round(gross * 0.05);
+                  const net = gross - tdsCut - serviceCut;
+                  const dateStr = h.processedAt
+                    ? new Date(h.processedAt).toLocaleDateString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      })
+                    : new Date(h.createdAt).toLocaleDateString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      });
+                  return (
+                    <tr key={h._id}>
+                      <td>{dateStr}</td>
+                      <td>
+                        <span style={{ fontWeight: 600, display: 'block' }}>
+                          {h.fullName}
+                        </span>
+                        <span style={{ fontSize: 11, color: '#94a3b8' }}>
+                          {h.adminId}
+                        </span>
+                      </td>
+                      <td>{h.level}</td>
+                      <td>{h.district || '\u2014'}</td>
+                      <td>{'\u20B9'}{fmt(gross)}</td>
+                      <td style={{ color: '#ef4444' }}>{'\u20B9'}{fmt(tdsCut)}</td>
+                      <td style={{ color: '#ef4444' }}>{'\u20B9'}{fmt(serviceCut)}</td>
+                      <td style={{ fontWeight: 600 }}>{'\u20B9'}{fmt(net)}</td>
+                      <td style={{ fontFamily: 'monospace', fontSize: 12 }}>
+                        {h.utr || `(${h.status})`}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

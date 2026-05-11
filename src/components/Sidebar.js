@@ -23,7 +23,12 @@ import {
   MdVerifiedUser,
   MdMenu,
 } from 'react-icons/md';
+import { useAuth } from '../context/AuthContext';
 import './Sidebar.css';
+
+// Sections / items can be tagged with `hideForRoles: [...]` so they
+// disappear when one of the listed roles is logged in.
+const HIDE_FOR_BOTH = ['District Admin', 'Taluk Admin', 'Promoters'];
 
 const menuSections = [
   {
@@ -40,6 +45,7 @@ const menuSections = [
   },
   {
     title: 'FRANCHISE MANAGEMENT',
+    hideForRoles: HIDE_FOR_BOTH,
     items: [
       { label: 'Franchise Module', icon: <MdStorefront />, path: '/franchise' },
       { label: 'Deposit & Allocation Engine', icon: <MdAccountBalance />, path: '/deposits' },
@@ -50,6 +56,7 @@ const menuSections = [
   },
   {
     title: 'E-COMMERCE OPERATIONS',
+    hideForRoles: HIDE_FOR_BOTH,
     items: [
       { label: 'Web Ops Mgt', icon: <MdWeb />, path: '/web-ops' },
       { label: 'Order & Customer Mgt', icon: <MdReceipt />, path: '/orders' },
@@ -62,15 +69,18 @@ const menuSections = [
       { label: 'Overview', icon: <MdAssessment />, path: '/commission-overview' },
       { label: 'Hierarchy Setup', icon: <MdAccountTree />, path: '/hierarchy' },
       { label: 'Commission Engine', icon: <MdSettings />, path: '/commission-engine' },
-      { label: 'Withdrawal', icon: <MdAccountBalanceWallet />, path: '/withdrawal' },
-      { label: 'KYC Verification', icon: <MdVerifiedUser />, path: '/kyc-verification' },
-      { label: 'Earnings', icon: <MdMonetizationOn />, path: '/earnings' },
-      { label: 'Taluk Admin Power', icon: <MdAccountTree />, path: '/taluk-admin-power' },
+      { label: 'Withdrawal', icon: <MdAccountBalanceWallet />, path: '/withdrawal', hideForRoles: HIDE_FOR_BOTH },
+      { label: 'KYC Verification', icon: <MdVerifiedUser />, path: '/kyc-verification', hideForRoles: HIDE_FOR_BOTH },
+      // Earnings = super admin's system-wide view; Wallet = each hierarchy user's own view.
+      { label: 'Earnings', icon: <MdMonetizationOn />, path: '/earnings', hideForRoles: HIDE_FOR_BOTH },
+      { label: 'Wallet', icon: <MdAccountBalanceWallet />, path: '/wallet', showOnlyForRoles: HIDE_FOR_BOTH },
+      { label: 'Taluk Admin Power', icon: <MdAccountTree />, path: '/taluk-admin-power', hideForRoles: ['District Admin', 'Promoters'] },
       { label: 'Reports', icon: <MdAssessment />, path: '/commission-reports' },
     ],
   },
   {
     title: 'SETTINGS',
+    hideForRoles: HIDE_FOR_BOTH,
     items: [
       { label: 'Teams', icon: <MdGroups />, path: '/teams' },
       { label: 'Notifications', icon: <MdNotifications />, path: '/notifications' },
@@ -82,6 +92,25 @@ const menuSections = [
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const { staff } = useAuth();
+  const currentRole = staff?.level || staff?.role || '';
+  const isHidden = (entry) => {
+    if (Array.isArray(entry?.hideForRoles) && entry.hideForRoles.includes(currentRole)) {
+      return true;
+    }
+    if (Array.isArray(entry?.showOnlyForRoles) && !entry.showOnlyForRoles.includes(currentRole)) {
+      return true;
+    }
+    return false;
+  };
+
+  const visibleSections = menuSections
+    .filter((section) => !isHidden(section))
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => !isHidden(item)),
+    }))
+    .filter((section) => section.items.length > 0);
 
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
@@ -92,7 +121,7 @@ export default function Sidebar() {
         </button>
       </div>
       <nav className="sidebar-nav">
-        {menuSections.map((section, si) => (
+        {visibleSections.map((section, si) => (
           <div key={si} className="sidebar-section">
             {section.title && !collapsed && (
               <div className="sidebar-section-title">{section.title}</div>

@@ -154,6 +154,27 @@ export const franchiseApplicationApi = {
   delete: (id) => request(`/franchise-applications/${id}`, { method: "DELETE" }),
 };
 
+// ─── Withdrawal Requests ──────────────────────────────
+export const withdrawalRequestApi = {
+  getAll: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/withdrawal-requests${query ? `?${query}` : ""}`);
+  },
+  getMine: () => request("/withdrawal-requests/mine"),
+  create: (data) =>
+    request("/withdrawal-requests", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  update: (id, data) =>
+    request(`/withdrawal-requests/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+  delete: (id) =>
+    request(`/withdrawal-requests/${id}`, { method: "DELETE" }),
+};
+
 // ─── Onboarded Franchises ─────────────────────────────
 export const franchiseApi = {
   getAll: (params = {}) => {

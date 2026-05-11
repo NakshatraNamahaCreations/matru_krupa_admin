@@ -339,6 +339,9 @@ export default function HierarchySetup() {
   const isSuperOrAdmin = staff?.role === 'admin' || staff?.role === 'super_admin';
   const canSeeDistrictSplit = isSuperOrAdmin || staff?.role === 'District Admin';
 
+  const isLoggedInTalukAdmin =
+    staff?.level === 'Taluk Admin' || staff?.role === 'Taluk Admin';
+
   const allowedLevels = isSuperOrAdmin
     ? LEVEL_OPTIONS
     : staff?.role === 'District Admin'
@@ -570,6 +573,19 @@ export default function HierarchySetup() {
     if (activeTab === 'shop') fetchShops();
   }, [activeTab, fetchAdmins, fetchRules, fetchSplits, fetchShops, fetchTalukAdmins]);
 
+  // When a Taluk Admin user is creating Promoters, auto-fill their own
+  // district / taluk and parentAdmin so the new promoter is linked to them.
+  useEffect(() => {
+    if (isLoggedInTalukAdmin && adminLevel === 'Promoters') {
+      setFormData((prev) => ({
+        ...prev,
+        district: staff?.district || prev.district,
+        talukName: staff?.talukName || prev.talukName,
+        parentAdmin: staff?._id || prev.parentAdmin,
+      }));
+    }
+  }, [isLoggedInTalukAdmin, adminLevel, staff]);
+
   // ── VALIDATION ──
 
   const validateAdmin = () => {
@@ -581,7 +597,13 @@ export default function HierarchySetup() {
     else if (!/\S+@\S+\.\S+/.test(formData.email)) e.email = 'Invalid email';
     if (!formData.district) e.district = 'District is required';
     if (adminLevel === 'Taluk Admin' && !formData.talukName.trim()) e.talukName = 'Taluk name is required';
-    if (adminLevel === 'Promoters' && !formData.parentAdmin) e.parentAdmin = 'Reporting Taluk Admin is required';
+    if (
+      adminLevel === 'Promoters' &&
+      !formData.parentAdmin &&
+      !isLoggedInTalukAdmin
+    ) {
+      e.parentAdmin = 'Reporting Taluk Admin is required';
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -995,14 +1017,26 @@ export default function HierarchySetup() {
                 <label className="hs-label">Date of Birth</label>
                 <input type="date" className="hs-input" value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} />
               </div>
-              <div className="hs-form-group">
-                <label className="hs-label">{adminLevel === 'Taluk Admin' ? 'District(Parent) *' : 'District *'}</label>
-                <select className="hs-select" value={formData.district} onChange={e => setFormData({...formData, district: e.target.value, talukName: '', parentAdmin: ''})}>
-                  <option value="">Select District</option>
-                  {KARNATAKA_DISTRICTS.map(d => <option key={d}>{d}</option>)}
-                </select>
-                {errors.district && <span style={{ color: '#ef4444', fontSize: 11 }}>{errors.district}</span>}
-              </div>
+              {isLoggedInTalukAdmin && adminLevel === 'Promoters' ? (
+                <div className="hs-form-group">
+                  <label className="hs-label">Reporting To</label>
+                  <input
+                    className="hs-input"
+                    value={`${staff?.fullName || staff?.name || ''} · ${staff?.adminId || ''} · ${staff?.talukName || ''}, ${staff?.district || ''}`}
+                    readOnly
+                    style={{ background: '#f8fafc', color: '#475569' }}
+                  />
+                </div>
+              ) : (
+                <div className="hs-form-group">
+                  <label className="hs-label">{adminLevel === 'Taluk Admin' ? 'District(Parent) *' : 'District *'}</label>
+                  <select className="hs-select" value={formData.district} onChange={e => setFormData({...formData, district: e.target.value, talukName: '', parentAdmin: ''})}>
+                    <option value="">Select District</option>
+                    {KARNATAKA_DISTRICTS.map(d => <option key={d}>{d}</option>)}
+                  </select>
+                  {errors.district && <span style={{ color: '#ef4444', fontSize: 11 }}>{errors.district}</span>}
+                </div>
+              )}
             </div>
             {adminLevel === 'Taluk Admin' && (
               <div className="hs-form-group">
@@ -1019,7 +1053,7 @@ export default function HierarchySetup() {
                 {errors.talukName && <span style={{ color: '#ef4444', fontSize: 11 }}>{errors.talukName}</span>}
               </div>
             )}
-            {adminLevel === 'Promoters' && (
+            {adminLevel === 'Promoters' && !isLoggedInTalukAdmin && (
               <div className="hs-form-group">
                 <label className="hs-label">Reporting Taluk Admin *</label>
                 <select

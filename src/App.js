@@ -27,6 +27,7 @@ import CommissionEngine from './pages/CommissionEngine';
 import Withdrawal from './pages/Withdrawal';
 import KycVerification from './pages/KycVerification';
 import Earnings from './pages/Earnings';
+import Wallet from './pages/Wallet';
 import TalukAdminPower from './pages/TalukAdminPower';
 import CommissionReports from './pages/CommissionReports';
 import './App.css';
@@ -70,6 +71,7 @@ function AppRoutes() {
       <Route path="/withdrawal" element={<PrivateRoute><Withdrawal /></PrivateRoute>} />
       <Route path="/kyc-verification" element={<PrivateRoute><KycVerification /></PrivateRoute>} />
       <Route path="/earnings" element={<PrivateRoute><Earnings /></PrivateRoute>} />
+      <Route path="/wallet" element={<PrivateRoute><Wallet /></PrivateRoute>} />
       <Route path="/taluk-admin-power" element={<PrivateRoute><TalukAdminPower /></PrivateRoute>} />
       <Route path="/commission-reports" element={<PrivateRoute><CommissionReports /></PrivateRoute>} />
       <Route path="/reports" element={<PrivateRoute><Reports /></PrivateRoute>} />
