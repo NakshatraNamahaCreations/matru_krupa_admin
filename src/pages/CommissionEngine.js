@@ -97,17 +97,17 @@ export default function CommissionEngine() {
     }
 
     const code = simForm.promoterCode.trim().toUpperCase();
-    if (!code.startsWith('KA-PA-')) {
+    if (!code.startsWith('KA-PR-')) {
       if (code.startsWith('KA-DA-')) {
-        setPromoterCodeError('District Admin codes are not allowed. Please enter a Promoter code (KA-PA-XXX).');
+        setPromoterCodeError('District Admin codes are not allowed. Please enter a Promoter code (KA-PR-XXX).');
       } else if (code.startsWith('KA-TA-')) {
-        setPromoterCodeError('Taluk Admin codes are not allowed. Please enter a Promoter code (KA-PA-XXX).');
+        setPromoterCodeError('Taluk Admin codes are not allowed. Please enter a Promoter code (KA-PR-XXX).');
       } else if (code.startsWith('KA-SA-')) {
-        setPromoterCodeError('State Admin codes are not allowed. Please enter a Promoter code (KA-PA-XXX).');
+        setPromoterCodeError('State Admin codes are not allowed. Please enter a Promoter code (KA-PR-XXX).');
       } else if (code.startsWith('KA-ADA-')) {
-        setPromoterCodeError('Ass. District Admin codes are not allowed. Please enter a Promoter code (KA-PA-XXX).');
+        setPromoterCodeError('Ass. District Admin codes are not allowed. Please enter a Promoter code (KA-PR-XXX).');
       } else {
-        setPromoterCodeError('Invalid code. Please enter a valid Promoter code (KA-PA-XXX).');
+        setPromoterCodeError('Invalid code. Please enter a valid Promoter code (KA-PR-XXX).');
       }
       return;
     }
@@ -248,7 +248,7 @@ export default function CommissionEngine() {
             <div className="ce-card-title">SALE SIMULATOR</div>
             <div className="ce-form-group">
               <label className="ce-label">Promoter Code</label>
-              <input className="ce-input" placeholder="Enter Promoter Code (e.g. KA-PA-001)" value={simForm.promoterCode} onChange={e => { setSimForm({...simForm, promoterCode: e.target.value}); setPromoterCodeError(''); }} />
+              <input className="ce-input" placeholder="Enter Promoter Code (e.g. KA-PR-001)" value={simForm.promoterCode} onChange={e => { setSimForm({...simForm, promoterCode: e.target.value}); setPromoterCodeError(''); }} />
               {promoterCodeError && <span style={{ color: '#ef4444', fontSize: 12, marginTop: 4, display: 'block' }}>{promoterCodeError}</span>}
             </div>
             <div className="ce-form-group">

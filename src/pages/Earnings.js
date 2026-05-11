@@ -5,12 +5,12 @@ import './Earnings.css';
 const roleTabs = ['State Admin', 'Assistant District Admin', 'District Admin', 'Taluk Admin', 'Promoters'];
 
 const demoPromoters = [
-  { sl: 1, name: 'Suresh', code: 'KA-PA-001', email: 'Suresh@gmail.com', phone: '9991773013', type: 'Buyer', district: 'Mysuru', taluk: '', sales: 10, earned: '20,000', status: 'Verified', joined: '12 Mar 2026', joinedTime: '2:30 PM' },
-  { sl: 2, name: 'Ravi', code: 'KA-PA-002', email: 'Ravi@gmail.com', phone: '907408990', type: 'New Promoter', district: 'Mysuru', taluk: '', sales: 8, earned: '16,000', status: 'Pending', joined: '11 Mar 2026', joinedTime: '11:30 AM' },
-  { sl: 3, name: 'Mahesh', code: 'KA-PA-003', email: 'Mahesh@gmail.com', phone: '9991773013', type: 'Buyer', district: 'Mysuru', taluk: '', sales: 12, earned: '24,000', status: 'Verified', joined: '10 Mar 2026', joinedTime: '12:30 PM' },
-  { sl: 4, name: 'Ankit', code: 'KA-PA-004', email: 'Ankit@gmail.com', phone: '9991773013', type: 'New Promoter', district: 'Mysuru', taluk: '', sales: 10, earned: '20,000', status: 'Verified', joined: '09 Mar 2026', joinedTime: '2:30 PM' },
-  { sl: 5, name: 'Manish', code: 'KA-PA-009', email: 'Manish@gmail.com', phone: '9991773013', type: 'Buyer', district: 'Mysuru/', taluk: 'Hunsur Town', sales: 14, earned: '28,000', status: 'Pending', joined: '08 Mar 2026', joinedTime: '11:02 AM' },
-  { sl: 6, name: 'Purav', code: 'KA-PA-006', email: 'Purav@gmail.com', phone: '9991773013', type: 'New Promoter', district: 'Mysuru/', taluk: 'Nanjungud', sales: 16, earned: '32,000', status: 'Verified', joined: '07 Mar 2026', joinedTime: '6:30 PM' },
+  { sl: 1, name: 'Suresh', code: 'KA-PR-001', email: 'Suresh@gmail.com', phone: '9991773013', type: 'Buyer', district: 'Mysuru', taluk: '', sales: 10, earned: '20,000', status: 'Verified', joined: '12 Mar 2026', joinedTime: '2:30 PM' },
+  { sl: 2, name: 'Ravi', code: 'KA-PR-002', email: 'Ravi@gmail.com', phone: '907408990', type: 'New Promoter', district: 'Mysuru', taluk: '', sales: 8, earned: '16,000', status: 'Pending', joined: '11 Mar 2026', joinedTime: '11:30 AM' },
+  { sl: 3, name: 'Mahesh', code: 'KA-PR-003', email: 'Mahesh@gmail.com', phone: '9991773013', type: 'Buyer', district: 'Mysuru', taluk: '', sales: 12, earned: '24,000', status: 'Verified', joined: '10 Mar 2026', joinedTime: '12:30 PM' },
+  { sl: 4, name: 'Ankit', code: 'KA-PR-004', email: 'Ankit@gmail.com', phone: '9991773013', type: 'New Promoter', district: 'Mysuru', taluk: '', sales: 10, earned: '20,000', status: 'Verified', joined: '09 Mar 2026', joinedTime: '2:30 PM' },
+  { sl: 5, name: 'Manish', code: 'KA-PR-009', email: 'Manish@gmail.com', phone: '9991773013', type: 'Buyer', district: 'Mysuru/', taluk: 'Hunsur Town', sales: 14, earned: '28,000', status: 'Pending', joined: '08 Mar 2026', joinedTime: '11:02 AM' },
+  { sl: 6, name: 'Purav', code: 'KA-PR-006', email: 'Purav@gmail.com', phone: '9991773013', type: 'New Promoter', district: 'Mysuru/', taluk: 'Nanjungud', sales: 16, earned: '32,000', status: 'Verified', joined: '07 Mar 2026', joinedTime: '6:30 PM' },
 ];
 
 const earningsHistory = [
