@@ -12,6 +12,24 @@
   top: 0;
 }
 
+.sidebar-brand-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.sidebar-logo {
+  width: 60px;
+  height: auto;
+  object-fit: contain;
+}
+
+.sidebar-brand {
+  font-size: 18px;
+  font-weight: 600;
+}
+
 .sidebar.collapsed {
   width: 64px;
   min-width: 64px;

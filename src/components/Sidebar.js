@@ -115,11 +115,24 @@ export default function Sidebar() {
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
-        {!collapsed && <span className="sidebar-brand">Matru Krupa</span>}
-        <button className="sidebar-toggle" onClick={() => setCollapsed(!collapsed)}>
-          <MdMenu />
-        </button>
-      </div>
+  {!collapsed && (
+    <div className="sidebar-brand-wrapper">
+      <img
+        src="/logo_mm.jpeg" // replace with your logo path
+        alt="Miracle Minds Logo"
+        className="sidebar-logo"
+      />
+      <span className="sidebar-brand">Miracle Minds</span>
+    </div>
+  )}
+
+  <button
+    className="sidebar-toggle"
+    onClick={() => setCollapsed(!collapsed)}
+  >
+    <MdMenu />
+  </button>
+</div>
       <nav className="sidebar-nav">
         {visibleSections.map((section, si) => (
           <div key={si} className="sidebar-section">
