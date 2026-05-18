@@ -122,7 +122,7 @@ export default function Sidebar() {
         alt="Miracle Minds Logo"
         className="sidebar-logo"
       />
-      <span className="sidebar-brand">Miracle Minds</span>
+      <span className="sidebar-brand">MIRACLE MIND</span>
     </div>
   )}
 
